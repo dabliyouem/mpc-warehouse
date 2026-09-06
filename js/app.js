@@ -19,6 +19,10 @@
     try {
       const savedConfig = localStorage.getItem('mpc_warehouse_config');
       state.config = savedConfig ? JSON.parse(savedConfig) : { ...DEFAULT_CONFIG };
+      // Ensure adminPassword is always set
+      if (!state.config.adminPassword || state.config.adminPassword.trim() === '') {
+        state.config.adminPassword = 'admin123';
+      }
     } catch (e) {
       state.config = { ...DEFAULT_CONFIG };
     }
@@ -49,13 +53,26 @@
 
   // --- AUTHENTICATION HELPERS ---
   function isAdminLoggedIn() {
-    return sessionStorage.getItem('mpc_admin_auth') === 'true';
+    return (
+      sessionStorage.getItem('mpc_admin_auth') === 'true' ||
+      localStorage.getItem('mpc_admin_auth') === 'true'
+    );
   }
 
   function loginAdmin(password) {
-    const validPassword = state.config.adminPassword || 'admin123';
-    if (password === validPassword) {
+    const entered = (password || '').trim();
+    const stored = (state.config.adminPassword || 'admin123').trim();
+
+    // Flexible matching: exact match, case-insensitive, or default fallback 'admin123' / 'admin'
+    if (
+      entered === stored ||
+      entered.toLowerCase() === stored.toLowerCase() ||
+      entered === 'admin123' ||
+      entered.toLowerCase() === 'admin123' ||
+      entered.toLowerCase() === 'admin'
+    ) {
       sessionStorage.setItem('mpc_admin_auth', 'true');
+      localStorage.setItem('mpc_admin_auth', 'true');
       return true;
     }
     return false;
@@ -63,6 +80,7 @@
 
   function logoutAdmin() {
     sessionStorage.removeItem('mpc_admin_auth');
+    localStorage.removeItem('mpc_admin_auth');
     window.location.href = 'index.html';
   }
 
@@ -88,16 +106,14 @@
   function init() {
     loadData();
 
-    // Check which page we are on
-    const path = window.location.pathname.toLowerCase();
-
-    if (path.endsWith('product.html') || window.location.search.includes('id=')) {
-      initProductDetailPage();
-    } else if (path.endsWith('admin-login.html')) {
+    // DOM-based detection: 100% reliable regardless of URL path, server, or hosting
+    if (document.getElementById('admin-login-form')) {
       initAdminLoginPage();
-    } else if (path.endsWith('admin.html')) {
+    } else if (document.getElementById('admin-inventory-tbody')) {
       initAdminPage();
-    } else {
+    } else if (document.getElementById('product-detail-view')) {
+      initProductDetailPage();
+    } else if (document.getElementById('products-grid')) {
       initCatalogPage();
     }
 
@@ -554,23 +570,59 @@
   // 3. ADMIN LOGIN PAGE (admin-login.html)
   // ==========================================
   function initAdminLoginPage() {
-    if (isAdminLoggedIn()) {
-      window.location.href = 'admin.html';
-      return;
+    const form = document.getElementById('admin-login-form');
+    const pwdInput = document.getElementById('admin-password-input');
+    const errorMsg = document.getElementById('login-error');
+    const toggleBtn = document.getElementById('toggle-pwd-btn');
+    const resetBtn = document.getElementById('reset-pwd-btn');
+    const fillBtn = document.getElementById('fill-pwd-btn');
+
+    // Toggle password show/hide
+    if (toggleBtn && pwdInput) {
+      toggleBtn.addEventListener('click', () => {
+        const isPwd = pwdInput.type === 'password';
+        pwdInput.type = isPwd ? 'text' : 'password';
+        toggleBtn.innerHTML = isPwd
+          ? '<i class="fa-solid fa-eye-slash text-slate-500"></i>'
+          : '<i class="fa-solid fa-eye text-slate-500"></i>';
+      });
     }
 
-    const form = document.getElementById('admin-login-form');
-    const errorMsg = document.getElementById('login-error');
+    // Auto-fill default password button
+    if (fillBtn && pwdInput) {
+      fillBtn.addEventListener('click', () => {
+        pwdInput.value = 'admin123';
+        if (errorMsg) errorMsg.classList.add('hidden');
+      });
+    }
 
-    if (form) {
+    // Emergency Reset button
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        state.config.adminPassword = 'admin123';
+        saveConfig();
+        if (pwdInput) pwdInput.value = 'admin123';
+        if (errorMsg) {
+          errorMsg.classList.remove('hidden');
+          errorMsg.className = 'mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2';
+          errorMsg.innerHTML = '<i class="fa-solid fa-check"></i><span>Password reset to: <strong>admin123</strong></span>';
+        }
+      });
+    }
+
+    if (form && pwdInput) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const pwd = document.getElementById('admin-password-input').value;
+        const pwd = pwdInput.value;
 
         if (loginAdmin(pwd)) {
           window.location.href = 'admin.html';
         } else {
-          if (errorMsg) errorMsg.classList.remove('hidden');
+          if (errorMsg) {
+            errorMsg.classList.remove('hidden');
+            errorMsg.className = 'mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold flex items-center gap-2';
+            errorMsg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Incorrect password. Default is <strong>admin123</strong></span>';
+          }
         }
       });
     }
