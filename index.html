@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MPC/SRC WAREHOUSE - Product Catalog</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col antialiased">
+
+  <!-- SINGLE TOP HEADER (BLACK) -->
+  <header class="bg-black text-white sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Title: MPC/SRC WAREHOUSE -->
+      <a href="index.html" class="flex items-center gap-2 text-white hover:opacity-90 transition-opacity">
+        <span class="text-lg sm:text-xl font-black tracking-tight">MPC/SRC WAREHOUSE</span>
+      </a>
+
+      <!-- Admin Panel Login Button -->
+      <div>
+        <a 
+          id="header-admin-link"
+          href="admin-login.html" 
+          class="px-3.5 py-2 rounded-xl text-xs font-bold border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 transition-colors flex items-center gap-1.5"
+        >
+          Admin Login
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CATALOG CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
+    
+    <!-- SEARCH & CATEGORY CONTROLS (SIMPLE & EFFECTIVE) -->
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <!-- Search Input -->
+        <div class="md:col-span-2 relative">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+          </div>
+          <input 
+            type="text" 
+            id="search-input"
+            placeholder="Search by product designation or reference code..." 
+            class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black focus:bg-white transition-all"
+          >
+        </div>
+
+        <!-- Category Dropdown List -->
+        <div>
+          <label for="category-dropdown" class="sr-only">Category Dropdown</label>
+          <select 
+            id="category-dropdown" 
+            class="w-full py-2.5 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
+          >
+            <!-- Injected dynamically -->
+            <option value="ALL">All Categories</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Quick Category Buttons / Pills -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar" id="category-pills">
+        <!-- Injected dynamically -->
+      </div>
+
+    </div>
+
+    <!-- Product Count Info -->
+    <div class="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+      <div>Available Stock: <span id="catalog-count" class="font-bold text-slate-900">0 items</span></div>
+      <div>Click any item to view photos and place direct WhatsApp order</div>
+    </div>
+
+    <!-- PRODUCT GRID TABLE -->
+    <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Injected dynamically by app.js -->
+    </div>
+
+  </main>
+
+  <!-- MINIMAL FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4">
+      <p class="font-bold text-slate-700">MPC/SRC WAREHOUSE</p>
+      <p class="mt-1">Direct Stock Inventory Showroom • Call or WhatsApp for orders</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
