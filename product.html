@@ -77,11 +77,15 @@
 
       container.innerHTML = '<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">' +
         '<div class="space-y-4">' +
-          '<div class="relative aspect-[4/3] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">' +
-            '<img id="main-product-img" src="' + escapeAttr(imgs[0]) + '" alt="' + escapeAttr(currentProd.designation) + '" class="w-full h-full object-cover" onerror="this.src=\'https://placehold.co/800x600?text=Photo\'">' +
+          '<div class="relative aspect-[4/3] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 group cursor-pointer" onclick="openLightbox(currentSlideIdx)" title="Click to view image in real size">' +
+            '<img id="main-product-img" src="' + escapeAttr(imgs[0]) + '" alt="' + escapeAttr(currentProd.designation) + '" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.src=\'https://placehold.co/800x600?text=Photo\'">' +
+            '<button type="button" onclick="event.stopPropagation(); openLightbox(currentSlideIdx)" class="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-black/80 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 backdrop-blur-sm shadow-md transition-all z-10">' +
+              '<i class="fa-solid fa-expand text-[11px] text-amber-400"></i>' +
+              '<span>View Real Size</span>' +
+            '</button>' +
             (imgs.length > 1 ? (
-              '<button type="button" onclick="changeSlide(-1)" class="slider-arrow prev"><i class="fa-solid fa-chevron-left text-sm"></i></button>' +
-              '<button type="button" onclick="changeSlide(1)" class="slider-arrow next"><i class="fa-solid fa-chevron-right text-sm"></i></button>'
+              '<button type="button" onclick="event.stopPropagation(); changeSlide(-1)" class="slider-arrow prev"><i class="fa-solid fa-chevron-left text-sm"></i></button>' +
+              '<button type="button" onclick="event.stopPropagation(); changeSlide(1)" class="slider-arrow next"><i class="fa-solid fa-chevron-right text-sm"></i></button>'
             ) : '') +
           '</div>' +
           (imgs.length > 1 ? (
@@ -93,6 +97,10 @@
               }).join('') +
             '</div>'
           ) : '') +
+          '<div class="flex items-center justify-between text-[11px] text-slate-400 px-1">' +
+            '<span class="flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass-plus text-slate-500"></i> Click photo or "View Real Size" to inspect in full resolution</span>' +
+            '<button type="button" onclick="openLightbox(currentSlideIdx)" class="font-bold text-slate-700 hover:text-black underline">Full Screen</button>' +
+          '</div>' +
         '</div>' +
 
         '<div class="space-y-6">' +
@@ -153,6 +161,159 @@
       }
     }
 
+    // LIGHTBOX / REAL-SIZE IMAGE VIEWER
+    var lightboxIdx = 0;
+    var isLightboxZoomed = false;
+
+    function openLightbox(idx) {
+      if (!currentProd || !currentProd.images || currentProd.images.length === 0) return;
+      lightboxIdx = (idx !== undefined) ? idx : currentSlideIdx;
+      isLightboxZoomed = false;
+
+      var box = document.getElementById('image-lightbox');
+      if (!box) return;
+
+      box.classList.remove('hidden');
+      box.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+
+      updateLightboxView();
+    }
+
+    function closeLightbox() {
+      var box = document.getElementById('image-lightbox');
+      if (!box) return;
+
+      box.classList.add('hidden');
+      box.classList.remove('flex');
+      document.body.style.overflow = '';
+      isLightboxZoomed = false;
+
+      if (typeof setSlide === 'function') {
+        setSlide(lightboxIdx);
+      }
+    }
+
+    function updateLightboxView() {
+      if (!currentProd || !currentProd.images) return;
+      var imgs = currentProd.images;
+      var total = imgs.length;
+      if (lightboxIdx < 0) lightboxIdx = 0;
+      if (lightboxIdx >= total) lightboxIdx = total - 1;
+
+      var currentImgSrc = imgs[lightboxIdx];
+
+      var refEl = document.getElementById('lightbox-ref');
+      var titleEl = document.getElementById('lightbox-title');
+      var counterEl = document.getElementById('lightbox-counter');
+      var imgEl = document.getElementById('lightbox-img');
+      var linkEl = document.getElementById('lightbox-direct-link');
+      var prevBtn = document.getElementById('lightbox-prev-btn');
+      var nextBtn = document.getElementById('lightbox-next-btn');
+      var thumbsContainer = document.getElementById('lightbox-thumbs');
+
+      if (refEl) refEl.textContent = 'REF: ' + (currentProd.ref || '');
+      if (titleEl) titleEl.textContent = currentProd.designation || '';
+      if (counterEl) counterEl.textContent = (lightboxIdx + 1) + ' / ' + total;
+      if (linkEl) linkEl.href = currentImgSrc;
+
+      if (prevBtn) prevBtn.style.display = total > 1 ? 'flex' : 'none';
+      if (nextBtn) nextBtn.style.display = total > 1 ? 'flex' : 'none';
+
+      if (imgEl) {
+        imgEl.src = currentImgSrc;
+        applyZoomStyles();
+      }
+
+      if (thumbsContainer) {
+        if (total > 1) {
+          thumbsContainer.style.display = 'flex';
+          thumbsContainer.innerHTML = imgs.map(function(s, i) {
+            return '<button type="button" onclick="setLightboxSlide(' + i + ')" class="w-12 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ' + (i === lightboxIdx ? 'border-white scale-105' : 'border-neutral-700 opacity-60 hover:opacity-100') + '">' +
+              '<img src="' + escapeAttr(s) + '" alt="thumb" class="w-full h-full object-cover">' +
+            '</button>';
+          }).join('');
+        } else {
+          thumbsContainer.style.display = 'none';
+        }
+      }
+    }
+
+    function setLightboxSlide(idx) {
+      lightboxIdx = idx;
+      isLightboxZoomed = false;
+      updateLightboxView();
+    }
+
+    function changeLightboxSlide(delta) {
+      if (!currentProd || !currentProd.images || currentProd.images.length <= 1) return;
+      var total = currentProd.images.length;
+      lightboxIdx = (lightboxIdx + delta + total) % total;
+      isLightboxZoomed = false;
+      updateLightboxView();
+    }
+
+    function toggleLightboxZoom() {
+      isLightboxZoomed = !isLightboxZoomed;
+      applyZoomStyles();
+    }
+
+    function applyZoomStyles() {
+      var imgEl = document.getElementById('lightbox-img');
+      var scrollArea = document.getElementById('lightbox-scroll-area');
+      var zoomIcon = document.getElementById('lightbox-zoom-icon');
+      var zoomLabel = document.getElementById('lightbox-zoom-label');
+
+      if (!imgEl) return;
+
+      if (isLightboxZoomed) {
+        // Real Size (100% Native Resolution / Natural Width)
+        imgEl.className = 'max-w-none max-h-none cursor-zoom-out shadow-2xl rounded-lg transition-transform duration-200 select-none m-auto';
+        imgEl.style.width = 'auto';
+        imgEl.style.height = 'auto';
+        if (scrollArea) {
+          scrollArea.classList.remove('items-center');
+          scrollArea.classList.remove('justify-center');
+          scrollArea.classList.add('block');
+        }
+        if (zoomIcon) zoomIcon.className = 'fa-solid fa-magnifying-glass-minus text-xs text-amber-400';
+        if (zoomLabel) zoomLabel.textContent = 'Fit to Screen';
+      } else {
+        // Fit to Screen
+        imgEl.className = 'max-h-[78vh] max-w-[90vw] object-contain shadow-2xl rounded-lg transition-all duration-200 cursor-zoom-in select-none m-auto';
+        imgEl.style.width = '';
+        imgEl.style.height = '';
+        if (scrollArea) {
+          scrollArea.classList.add('items-center');
+          scrollArea.classList.add('justify-center');
+          scrollArea.classList.remove('block');
+        }
+        if (zoomIcon) zoomIcon.className = 'fa-solid fa-magnifying-glass-plus text-xs text-amber-400';
+        if (zoomLabel) zoomLabel.textContent = '100% Real Size';
+      }
+    }
+
+    function handleLightboxBackdropClick(e) {
+      if (e.target && (e.target.id === 'lightbox-scroll-area' || e.target.id === 'image-lightbox')) {
+        closeLightbox();
+      }
+    }
+
+    window.addEventListener('keydown', function(e) {
+      var box = document.getElementById('image-lightbox');
+      if (!box || box.classList.contains('hidden')) return;
+
+      if (e.key === 'Escape') {
+        closeLightbox();
+      } else if (e.key === 'ArrowLeft') {
+        changeLightboxSlide(-1);
+      } else if (e.key === 'ArrowRight') {
+        changeLightboxSlide(1);
+      } else if (e.key === 'z' || e.key === 'Z') {
+        toggleLightboxZoom();
+      }
+    });
+
     function escapeHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -209,6 +370,104 @@
       <p class="mt-1">Direct Stock Inventory Showroom</p>
     </div>
   </footer>
+
+  <!-- FULLSCREEN REAL-SIZE IMAGE LIGHTBOX -->
+  <div id="image-lightbox" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex-col justify-between select-none">
+    
+    <!-- Top Control Bar -->
+    <div class="h-16 px-4 sm:px-6 flex items-center justify-between bg-black/60 border-b border-neutral-800 text-white z-10">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <span class="font-mono text-xs font-black bg-neutral-800 text-neutral-300 px-2.5 py-1 rounded border border-neutral-700 flex-shrink-0" id="lightbox-ref">REF</span>
+        <span class="text-xs sm:text-sm font-bold text-white truncate" id="lightbox-title">Product Name</span>
+        <span class="text-xs font-mono text-neutral-400 bg-neutral-900 px-2 py-0.5 rounded flex-shrink-0" id="lightbox-counter">1 / 1</span>
+      </div>
+
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <!-- Toggle 100% Real Size / Fit to Screen -->
+        <button 
+          type="button" 
+          id="lightbox-zoom-btn"
+          onclick="toggleLightboxZoom()" 
+          class="px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-xs font-bold text-white flex items-center gap-1.5 transition-colors border border-neutral-700 shadow-sm"
+          title="Toggle 100% Real Size / Fit to Screen"
+        >
+          <i id="lightbox-zoom-icon" class="fa-solid fa-magnifying-glass-plus text-xs text-amber-400"></i>
+          <span id="lightbox-zoom-label" class="hidden sm:inline">100% Real Size</span>
+        </button>
+
+        <!-- Open in New Tab -->
+        <a 
+          id="lightbox-direct-link"
+          href="#" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          class="px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-xs font-bold text-white flex items-center gap-1.5 transition-colors border border-neutral-700"
+          title="Open original image file in new tab"
+        >
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-neutral-300"></i>
+          <span class="hidden md:inline">Open Original</span>
+        </a>
+
+        <!-- Close Button -->
+        <button 
+          type="button" 
+          onclick="closeLightbox()" 
+          class="w-9 h-9 rounded-xl bg-neutral-800 hover:bg-rose-600 text-white flex items-center justify-center transition-colors ml-1 border border-neutral-700"
+          title="Close (Esc)"
+        >
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Central Image Container -->
+    <div id="lightbox-scroll-area" class="flex-grow flex items-center justify-center relative overflow-auto p-4 cursor-zoom-in" onclick="handleLightboxBackdropClick(event)">
+      
+      <!-- Previous Arrow -->
+      <button 
+        type="button" 
+        id="lightbox-prev-btn" 
+        onclick="event.stopPropagation(); changeLightboxSlide(-1)" 
+        class="slider-arrow prev text-lg !w-11 !h-11 !bg-neutral-900/80 hover:!bg-black !text-white shadow-xl"
+        title="Previous Image (Left Arrow)"
+      >
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+
+      <!-- Main Image Display -->
+      <img 
+        id="lightbox-img" 
+        src="" 
+        alt="Product Real Size" 
+        class="max-h-[78vh] max-w-[90vw] object-contain shadow-2xl rounded-lg transition-all duration-200 cursor-zoom-in select-none m-auto"
+        onclick="event.stopPropagation(); toggleLightboxZoom()"
+        title="Click to toggle between Fit to Screen and 100% Real Size"
+      >
+
+      <!-- Next Arrow -->
+      <button 
+        type="button" 
+        id="lightbox-next-btn" 
+        onclick="event.stopPropagation(); changeLightboxSlide(1)" 
+        class="slider-arrow next text-lg !w-11 !h-11 !bg-neutral-900/80 hover:!bg-black !text-white shadow-xl"
+        title="Next Image (Right Arrow)"
+      >
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Bottom Thumbnail / Hint Bar -->
+    <div class="p-3 bg-black/70 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+      <div class="flex items-center gap-2 overflow-x-auto py-1" id="lightbox-thumbs">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="hidden sm:flex items-center gap-3 text-[11px] text-neutral-400 whitespace-nowrap pl-4">
+        <span><kbd class="px-1.5 py-0.5 rounded bg-neutral-800 text-white font-mono text-[10px]">Click photo</kbd> to toggle 100% zoom</span>
+        <span><kbd class="px-1.5 py-0.5 rounded bg-neutral-800 text-white font-mono text-[10px]">Esc</kbd> to exit</span>
+      </div>
+    </div>
+
+  </div>
 
 </body>
 </html>
