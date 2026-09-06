@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - MPC/SRC WAREHOUSE</title>
 
+  <!-- Auth Guard (Directs unauthenticated users to login) -->
+  <script>
+    (function() {
+      try {
+        var isAuth = localStorage.getItem('mpc_admin_auth') === 'true' || sessionStorage.getItem('mpc_admin_auth') === 'true';
+        if (!isAuth) {
+          window.location.replace('admin-login.html');
+        }
+      } catch(e) {}
+    })();
+  </script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
@@ -41,7 +53,7 @@
       warehouseName: "MPC/SRC WAREHOUSE",
       phone: "+1 234 567 8900",
       whatsapp: "12345678900",
-      adminPassword: "admin123"
+      adminPassword: "DABLIYOU12"
     };
     var currentEditingId = null;
 
@@ -61,6 +73,10 @@
         var rawCfg = localStorage.getItem('mpc_warehouse_config');
         if (rawCfg) {
           adminConfig = JSON.parse(rawCfg);
+          if (!adminConfig.adminPassword || adminConfig.adminPassword === 'admin123') {
+            adminConfig.adminPassword = "DABLIYOU12";
+            saveCfgToStorage();
+          }
         }
       } catch(e) {}
     }
@@ -321,7 +337,7 @@
 
       if (waInput) waInput.value = adminConfig.whatsapp || '12345678900';
       if (phoneInput) phoneInput.value = adminConfig.phone || '+1 234 567 8900';
-      if (pwdInput) pwdInput.value = adminConfig.adminPassword || 'admin123';
+      if (pwdInput) pwdInput.value = adminConfig.adminPassword || 'DABLIYOU12';
     }
 
     function saveSettings(e) {
@@ -679,7 +695,7 @@
 
           <div>
             <label for="cfg-password" class="block text-xs font-bold text-slate-700 mb-1">Admin Panel Password</label>
-            <input type="text" id="cfg-password" placeholder="Enter new admin password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
+            <input type="password" id="cfg-password" placeholder="Enter new admin password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
           </div>
 
           <div class="pt-3">

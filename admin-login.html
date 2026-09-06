@@ -31,48 +31,28 @@
       }
     }
 
-    function fillDefaultPassword() {
-      var pwd = document.getElementById('admin-password-input');
-      if (pwd) pwd.value = 'admin123';
-    }
-
-    function instantUnlock() {
-      try {
-        localStorage.setItem('mpc_admin_auth', 'true');
-        sessionStorage.setItem('mpc_admin_auth', 'true');
-      } catch(e) {}
-      window.location.href = 'admin.html?unlocked=true';
-    }
-
     function directSubmitLogin(e) {
       if (e && e.preventDefault) e.preventDefault();
       var input = document.getElementById('admin-password-input');
       var val = (input ? input.value : '').trim();
 
-      var stored = 'admin123';
+      var stored = 'DABLIYOU12';
       try {
         var raw = localStorage.getItem('mpc_warehouse_config');
         if (raw) {
           var cfg = JSON.parse(raw);
-          if (cfg.adminPassword && cfg.adminPassword.trim()) {
+          if (cfg.adminPassword && cfg.adminPassword.trim() && cfg.adminPassword.trim() !== 'admin123') {
             stored = cfg.adminPassword.trim();
           }
         }
       } catch (err) {}
 
-      if (
-        val === stored ||
-        val.toLowerCase() === stored.toLowerCase() ||
-        val === 'admin123' ||
-        val.toLowerCase() === 'admin123' ||
-        val === 'admin' ||
-        val.toLowerCase() === 'admin'
-      ) {
+      if (val === stored || val.toUpperCase() === stored.toUpperCase()) {
         try {
           localStorage.setItem('mpc_admin_auth', 'true');
           sessionStorage.setItem('mpc_admin_auth', 'true');
         } catch(e) {}
-        window.location.href = 'admin.html?unlocked=true';
+        window.location.href = 'admin.html';
         return false;
       } else {
         var err = document.getElementById('login-error');
@@ -80,7 +60,7 @@
           err.classList.remove('hidden');
           var errText = document.getElementById('login-error-text');
           if (errText) {
-            errText.innerHTML = 'Incorrect password. Default is <strong>admin123</strong> or click "Instant Unlock" below.';
+            errText.textContent = 'Incorrect password. Please try again.';
           }
         }
         return false;
@@ -128,7 +108,7 @@
       <!-- Error / Status Message -->
       <div id="login-error" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold flex items-center gap-2">
         <i class="fa-solid fa-circle-exclamation"></i>
-        <span id="login-error-text">Incorrect password. Default is <strong>admin123</strong></span>
+        <span id="login-error-text">Incorrect password. Please try again.</span>
       </div>
 
       <!-- Form -->
@@ -143,7 +123,7 @@
               autocorrect="off"
               spellcheck="false"
               placeholder="Enter password..." 
-              value="admin123"
+              value=""
               class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-black focus:bg-white"
             >
             <button 
@@ -156,13 +136,6 @@
               <i class="fa-solid fa-eye text-slate-400"></i>
             </button>
           </div>
-          
-          <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-            <span>Default: <strong class="text-slate-700">admin123</strong></span>
-            <button type="button" onclick="fillDefaultPassword()" class="text-blue-600 font-bold hover:underline">
-              Auto-fill
-            </button>
-          </div>
         </div>
 
         <button 
@@ -171,19 +144,6 @@
         >
           Sign In to Admin Panel
         </button>
-
-        <!-- Instant Direct Bypass (Guarantees Access) -->
-        <div class="pt-3 border-t border-slate-100 text-center space-y-2">
-          <button 
-            type="button" 
-            onclick="instantUnlock()" 
-            class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-200 transition-all flex items-center justify-center gap-1.5"
-          >
-            <i class="fa-solid fa-bolt text-amber-500"></i>
-            <span>Instant Unlock & Enter Admin</span>
-          </button>
-          <p class="text-[10px] text-slate-400">Click if password gives you trouble to enter directly.</p>
-        </div>
       </form>
 
     </div>
