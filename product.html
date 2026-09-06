@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - MPC/SRC WAREHOUSE</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col antialiased">
+
+  <!-- SINGLE TOP HEADER (BLACK) -->
+  <header class="bg-black text-white sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Title: MPC/SRC WAREHOUSE -->
+      <a href="index.html" class="flex items-center gap-2 text-white hover:opacity-90 transition-opacity">
+        <span class="text-lg sm:text-xl font-black tracking-tight">MPC/SRC WAREHOUSE</span>
+      </a>
+
+      <!-- Back to Catalog -->
+      <div>
+        <a 
+          href="index.html" 
+          class="px-3.5 py-2 rounded-xl text-xs font-bold border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 transition-colors flex items-center gap-1.5"
+        >
+          <i class="fa-solid fa-arrow-left text-xs"></i>
+          <span>Back to Catalog</span>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- DEDICATED PRODUCT DETAILS CONTAINER -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+    <div id="product-detail-view" class="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm">
+      <!-- Injected dynamically by initProductDetailPage in app.js -->
+    </div>
+  </main>
+
+  <!-- MINIMAL FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4">
+      <p class="font-bold text-slate-700">MPC/SRC WAREHOUSE</p>
+      <p class="mt-1">Direct Stock Inventory Showroom</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
