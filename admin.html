@@ -9,12 +9,33 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css?v=5">
+  
+  <!-- EMBEDDED STYLES (100% Standalone - No css folder needed) -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 
-  <!-- CRITICAL INLINE SCRIPT IN HEAD (Guaranteed to be available before any click) -->
+  <!-- CRITICAL INLINE SCRIPT IN HEAD (100% Standalone - No js folder needed) -->
   <script>
-    // State
+    var DEFAULT_PRODUCTS = [
+      { id: "prod-101", ref: "REF-PWR-8820", designation: "Industrial Heavy-Duty Rotary Hammer Drill 1200W", category: "Tools & Equipment", type: "Power Tools", qte: 145, unit: "pcs", description: "High impact rotary drill with transport case.", images: ["https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-102", ref: "REF-PWR-8825", designation: "Brushless Cordless Impact Wrench 20V (4.0Ah Li-ion)", category: "Tools & Equipment", type: "Cordless Tools", qte: 92, unit: "pcs", description: "High torque wrench with dual batteries.", images: ["https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-103", ref: "REF-PLM-4010", designation: "Heavy-Duty Brass Ball Valve 1-inch Female-to-Female", category: "Plumbing & Piping", type: "Valves", qte: 620, unit: "pcs", description: "Forged brass ball valve PN25.", images: ["https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-104", ref: "REF-PLM-4025", designation: "PEX-AL-PEX Multilayer Plumbing Pipe Roll 16mm x 2.0mm", category: "Plumbing & Piping", type: "Pipes", qte: 75, unit: "rolls", description: "100m roll for underfloor heating and water.", images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186c5f8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-105", ref: "REF-ELC-1205", designation: "Industrial Waterproof Electrical Junction Box IP66", category: "Electrical & Lighting", type: "Enclosures", qte: 310, unit: "pcs", description: "ABS thermoplastic waterproof box.", images: ["https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-106", ref: "REF-ELC-1290", designation: "Commercial High-Bay LED Warehouse Floodlight 150W", category: "Electrical & Lighting", type: "Lighting", qte: 88, unit: "units", description: "19,500 lumens high bay light.", images: ["https://images.unsplash.com/photo-1565814636199-ae8133055c1c?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-107", ref: "REF-LOG-5001", designation: "Standard Euro Wooden Pallet 1200x800mm Heat Treated", category: "Storage & Packaging", type: "Pallets", qte: 450, unit: "units", description: "Certified EPAL grade A pallets.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-108", ref: "REF-LOG-5088", designation: "Industrial Hand Stretch Film Wrap 500mm x 300m", category: "Storage & Packaging", type: "Packaging", qte: 850, unit: "rolls", description: "23 microns heavy duty wrap.", images: ["https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-109", ref: "REF-SAF-3012", designation: "Steel-Toe Safety Work Boots S3 SRC Leather", category: "Safety & PPE", type: "Footwear", qte: 190, unit: "pairs", description: "Anti-puncture steel midsole safety shoes.", images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-110", ref: "REF-SAF-3040", designation: "High-Visibility Reflective Safety Vests Class 2", category: "Safety & PPE", type: "Workwear", qte: 1200, unit: "pcs", description: "Reflective vest with front zipper.", images: ["https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-111", ref: "REF-MAT-7100", designation: "Galvanized Steel Hex Head Bolts & Nuts Assortment", category: "Hardware & Fasteners", type: "Fasteners", qte: 350, unit: "boxes", description: "Grade 8.8 zinc plated hex bolts.", images: ["https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-112", ref: "REF-MAT-7210", designation: "Heavy-Duty Hydraulic Hand Pallet Jack 3.0 Ton", category: "Storage & Packaging", type: "Handling", qte: 18, unit: "units", description: "Industrial manual pallet truck 3000kg.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80"] }
+    ];
+
     var adminProducts = [];
     var adminConfig = {
       warehouseName: "MPC/SRC WAREHOUSE",
@@ -24,48 +45,38 @@
     };
     var currentEditingId = null;
 
-    // Load Data immediately
     function loadAdminData() {
       try {
         var rawProds = localStorage.getItem('mpc_warehouse_products');
         if (rawProds && rawProds !== '[]') {
           adminProducts = JSON.parse(rawProds);
-        } else if (typeof INITIAL_PRODUCTS !== 'undefined') {
-          adminProducts = JSON.parse(JSON.stringify(INITIAL_PRODUCTS));
+        } else {
+          adminProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
         }
       } catch(e) {
-        if (typeof INITIAL_PRODUCTS !== 'undefined') adminProducts = JSON.parse(JSON.stringify(INITIAL_PRODUCTS));
+        adminProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
       }
 
       try {
         var rawCfg = localStorage.getItem('mpc_warehouse_config');
         if (rawCfg) {
           adminConfig = JSON.parse(rawCfg);
-        } else if (typeof DEFAULT_CONFIG !== 'undefined') {
-          adminConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
         }
-      } catch(e) {
-        if (typeof DEFAULT_CONFIG !== 'undefined') adminConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-      }
+      } catch(e) {}
     }
 
     function saveProdsToStorage() {
       try {
         localStorage.setItem('mpc_warehouse_products', JSON.stringify(adminProducts));
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) {}
     }
 
     function saveCfgToStorage() {
       try {
         localStorage.setItem('mpc_warehouse_config', JSON.stringify(adminConfig));
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) {}
     }
 
-    // Direct bulletproof tab switching using direct style.display
     function switchTab(tabName) {
       var secTable = document.getElementById('sec-inventory-table');
       var secForm = document.getElementById('sec-product-form');
@@ -79,7 +90,6 @@
       if (secForm) secForm.style.display = 'none';
       if (secSettings) secSettings.style.display = 'none';
 
-      // Reset button classes
       var inactive = "px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5";
       var active = "px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5 shadow-sm";
 
@@ -195,7 +205,6 @@
       switchTab('table');
     }
 
-    // Direct save product function
     function saveProduct(e) {
       if (e && e.preventDefault) e.preventDefault();
 
@@ -217,7 +226,6 @@
       var imagesRaw = imagesInput ? imagesInput.value.trim() : '';
       var description = descInput ? descInput.value.trim() : '';
 
-      // Validation with visible alert
       if (!ref) {
         alert('Please enter a Reference Code (REF).');
         if (refInput) refInput.focus();
@@ -347,22 +355,6 @@
       return false;
     }
 
-    // Export & Download data.js directly for GitHub
-    function downloadUpdatedDataJs() {
-      var content = "// MPC/SRC WAREHOUSE - Catalog Data\n" +
-        "const DEFAULT_CONFIG = " + JSON.stringify(adminConfig, null, 2) + ";\n\n" +
-        "const INITIAL_PRODUCTS = " + JSON.stringify(adminProducts, null, 2) + ";\n";
-
-      var blob = new Blob([content], { type: 'text/javascript' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'data.js';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      showAlert('📥 data.js downloaded! Upload it to GitHub "js/data.js" to update all clients.');
-    }
-
     function exportJson() {
       var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(adminProducts, null, 2));
       var dl = document.createElement('a');
@@ -398,11 +390,7 @@
 
     function resetSample() {
       if (confirm('Reset to default sample warehouse products?')) {
-        if (typeof INITIAL_PRODUCTS !== 'undefined') {
-          adminProducts = JSON.parse(JSON.stringify(INITIAL_PRODUCTS));
-        } else {
-          adminProducts = [];
-        }
+        adminProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
         saveProdsToStorage();
         renderTable();
         showAlert('Sample products restored.');
@@ -434,7 +422,7 @@
 
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function escapeAttr(str) {
@@ -442,7 +430,6 @@
       return String(str).replace(/"/g, '&quot;');
     }
 
-    // Initialize immediately without waiting for DOMContentLoaded
     function bootAdmin() {
       loadAdminData();
       renderTable();
@@ -545,7 +532,7 @@
             <h2 class="text-base font-black text-slate-900">Current Warehouse Products</h2>
             <span id="admin-total-items" class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700">0 products</span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">Edit quantities directly in the box below. Click "+ Add Product" to create an item.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Edit quantities directly in the table. Click "+ Add Product" to create an item.</p>
         </div>
         
         <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
@@ -557,17 +544,6 @@
           >
             <i class="fa-solid fa-plus text-orange-400"></i>
             <span>+ Add Product</span>
-          </button>
-
-          <!-- Download data.js for GitHub button -->
-          <button 
-            type="button" 
-            onclick="downloadUpdatedDataJs()" 
-            class="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all"
-            title="Download data.js to update all clients on GitHub"
-          >
-            <i class="fa-solid fa-cloud-arrow-down text-emerald-600"></i>
-            <span>Download data.js</span>
           </button>
 
           <button type="button" onclick="exportJson()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1">
@@ -722,7 +698,5 @@
     <p>MPC/SRC WAREHOUSE • Administration</p>
   </footer>
 
-  <!-- External Defaults -->
-  <script src="js/data.js?v=5"></script>
 </body>
 </html>

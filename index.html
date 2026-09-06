@@ -9,8 +9,256 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css?v=3">
+
+  <!-- EMBEDDED STYLES (100% Standalone - No css folder needed) -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .slider-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 9999px; background: rgba(0, 0, 0, 0.7); color: white; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; z-index: 10; transition: all 0.2s ease; }
+    .slider-arrow:hover { background: rgba(0, 0, 0, 0.95); transform: translateY(-50%) scale(1.08); }
+    .slider-arrow.prev { left: 8px; }
+    .slider-arrow.next { right: 8px; }
+    .slider-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 10; padding: 3px 6px; background: rgba(0, 0, 0, 0.4); border-radius: 9999px; }
+    .slider-dot { width: 5px; height: 5px; border-radius: 9999px; background: rgba(255, 255, 255, 0.5); transition: all 0.2s ease; }
+    .slider-dot.active { width: 14px; background: #ffffff; }
+    .product-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .product-card:hover { transform: translateY(-3px); box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.08); }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <!-- EMBEDDED CATALOG LOGIC & DATA (100% Standalone - No js folder needed) -->
+  <script>
+    var DEFAULT_PRODUCTS = [
+      { id: "prod-101", ref: "REF-PWR-8820", designation: "Industrial Heavy-Duty Rotary Hammer Drill 1200W", category: "Tools & Equipment", type: "Power Tools", qte: 145, unit: "pcs", description: "High impact rotary drill with transport case.", images: ["https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-102", ref: "REF-PWR-8825", designation: "Brushless Cordless Impact Wrench 20V (4.0Ah Li-ion)", category: "Tools & Equipment", type: "Cordless Tools", qte: 92, unit: "pcs", description: "High torque wrench with dual batteries.", images: ["https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-103", ref: "REF-PLM-4010", designation: "Heavy-Duty Brass Ball Valve 1-inch Female-to-Female", category: "Plumbing & Piping", type: "Valves", qte: 620, unit: "pcs", description: "Forged brass ball valve PN25.", images: ["https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-104", ref: "REF-PLM-4025", designation: "PEX-AL-PEX Multilayer Plumbing Pipe Roll 16mm x 2.0mm", category: "Plumbing & Piping", type: "Pipes", qte: 75, unit: "rolls", description: "100m roll for underfloor heating and water.", images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186c5f8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-105", ref: "REF-ELC-1205", designation: "Industrial Waterproof Electrical Junction Box IP66", category: "Electrical & Lighting", type: "Enclosures", qte: 310, unit: "pcs", description: "ABS thermoplastic waterproof box.", images: ["https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-106", ref: "REF-ELC-1290", designation: "Commercial High-Bay LED Warehouse Floodlight 150W", category: "Electrical & Lighting", type: "Lighting", qte: 88, unit: "units", description: "19,500 lumens high bay light.", images: ["https://images.unsplash.com/photo-1565814636199-ae8133055c1c?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-107", ref: "REF-LOG-5001", designation: "Standard Euro Wooden Pallet 1200x800mm Heat Treated", category: "Storage & Packaging", type: "Pallets", qte: 450, unit: "units", description: "Certified EPAL grade A pallets.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-108", ref: "REF-LOG-5088", designation: "Industrial Hand Stretch Film Wrap 500mm x 300m", category: "Storage & Packaging", type: "Packaging", qte: 850, unit: "rolls", description: "23 microns heavy duty wrap.", images: ["https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-109", ref: "REF-SAF-3012", designation: "Steel-Toe Safety Work Boots S3 SRC Leather", category: "Safety & PPE", type: "Footwear", qte: 190, unit: "pairs", description: "Anti-puncture steel midsole safety shoes.", images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-110", ref: "REF-SAF-3040", designation: "High-Visibility Reflective Safety Vests Class 2", category: "Safety & PPE", type: "Workwear", qte: 1200, unit: "pcs", description: "Reflective vest with front zipper.", images: ["https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-111", ref: "REF-MAT-7100", designation: "Galvanized Steel Hex Head Bolts & Nuts Assortment", category: "Hardware & Fasteners", type: "Fasteners", qte: 350, unit: "boxes", description: "Grade 8.8 zinc plated hex bolts.", images: ["https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-112", ref: "REF-MAT-7210", designation: "Heavy-Duty Hydraulic Hand Pallet Jack 3.0 Ton", category: "Storage & Packaging", type: "Handling", qte: 18, unit: "units", description: "Industrial manual pallet truck 3000kg.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80"] }
+    ];
+
+    var catalogProducts = [];
+    var activeCategory = 'ALL';
+    var searchQuery = '';
+    var sliderIndices = {};
+
+    function initCatalog() {
+      try {
+        var raw = localStorage.getItem('mpc_warehouse_products');
+        if (raw && raw !== '[]') {
+          catalogProducts = JSON.parse(raw);
+        } else {
+          catalogProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        }
+      } catch(e) {
+        catalogProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+      }
+
+      renderCategories();
+      renderProducts();
+
+      var search = document.getElementById('search-input');
+      if (search) {
+        search.addEventListener('input', function(e) {
+          searchQuery = e.target.value;
+          renderProducts();
+        });
+      }
+
+      var dropdown = document.getElementById('category-dropdown');
+      if (dropdown) {
+        dropdown.addEventListener('change', function(e) {
+          activeCategory = e.target.value;
+          syncPills();
+          renderProducts();
+        });
+      }
+
+      // Check admin status
+      var authBtn = document.getElementById('header-admin-link');
+      if (authBtn) {
+        var isAuth = localStorage.getItem('mpc_admin_auth') === 'true' || sessionStorage.getItem('mpc_admin_auth') === 'true';
+        if (isAuth) {
+          authBtn.href = 'admin.html';
+          authBtn.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 inline-block"></span>Admin Panel';
+        }
+      }
+    }
+
+    function getUniqueCategories() {
+      var map = {};
+      for (var i = 0; i < catalogProducts.length; i++) {
+        var cat = catalogProducts[i].category;
+        if (cat) map[cat] = (map[cat] || 0) + 1;
+      }
+      return map;
+    }
+
+    function renderCategories() {
+      var dropdown = document.getElementById('category-dropdown');
+      var pills = document.getElementById('category-pills');
+      var cats = getUniqueCategories();
+
+      if (dropdown) {
+        var opts = '<option value="ALL">All Categories (' + catalogProducts.length + ')</option>';
+        for (var c in cats) {
+          opts += '<option value="' + escapeAttr(c) + '">' + escapeHtml(c) + ' (' + cats[c] + ')</option>';
+        }
+        dropdown.innerHTML = opts;
+      }
+
+      if (pills) {
+        var phtml = '<button type="button" onclick="setCat(\'ALL\')" class="cat-pill px-4 py-2 rounded-xl text-xs font-bold transition-all ' + (activeCategory === 'ALL' ? 'bg-black text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200') + '">All (' + catalogProducts.length + ')</button>';
+        for (var catName in cats) {
+          var isAct = activeCategory === catName;
+          phtml += '<button type="button" onclick="setCat(\'' + escapeAttr(catName) + '\')" class="cat-pill px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ' + (isAct ? 'bg-black text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200') + '">' + escapeHtml(catName) + ' <span class="opacity-60 text-[10px] ml-1">(' + cats[catName] + ')</span></button>';
+        }
+        pills.innerHTML = phtml;
+      }
+    }
+
+    function syncPills() {
+      var dropdown = document.getElementById('category-dropdown');
+      if (dropdown) dropdown.value = activeCategory;
+
+      var pills = document.getElementById('category-pills');
+      if (pills) {
+        var btns = pills.querySelectorAll('button');
+        for (var i = 0; i < btns.length; i++) {
+          var t = btns[i].textContent.trim();
+          if ((activeCategory === 'ALL' && t.indexOf('All') === 0) || t.indexOf(activeCategory) === 0) {
+            btns[i].className = 'cat-pill px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-black text-white';
+          } else {
+            btns[i].className = 'cat-pill px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200';
+          }
+        }
+      }
+    }
+
+    function setCat(name) {
+      activeCategory = name;
+      syncPills();
+      renderProducts();
+    }
+
+    function renderProducts() {
+      var container = document.getElementById('products-grid');
+      var countBadge = document.getElementById('catalog-count');
+      if (!container) return;
+
+      var list = [];
+      var q = searchQuery.toLowerCase().trim();
+
+      for (var i = 0; i < catalogProducts.length; i++) {
+        var p = catalogProducts[i];
+        if (activeCategory !== 'ALL' && p.category !== activeCategory) continue;
+        if (q) {
+          var matchRef = (p.ref || '').toLowerCase().indexOf(q) !== -1;
+          var matchDes = (p.designation || '').toLowerCase().indexOf(q) !== -1;
+          var matchCat = (p.category || '').toLowerCase().indexOf(q) !== -1;
+          if (!matchRef && !matchDes && !matchCat) continue;
+        }
+        list.push(p);
+      }
+
+      if (countBadge) countBadge.textContent = list.length + ' products';
+
+      if (list.length === 0) {
+        container.innerHTML = '<div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200"><p class="font-bold text-slate-700">No products found</p><button onclick="setCat(\'ALL\')" class="mt-4 px-4 py-2 bg-black text-white text-xs font-bold rounded-xl">View All Products</button></div>';
+        return;
+      }
+
+      var html = '';
+      for (var j = 0; j < list.length; j++) {
+        var prod = list[j];
+        var imgs = (prod.images && prod.images.length > 0) ? prod.images : ['https://placehold.co/600x450?text=No+Photo'];
+        var current = sliderIndices[prod.id] || 0;
+        var hasMulti = imgs.length > 1;
+
+        html += '<div class="product-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:border-slate-400 transition-all">' +
+          '<div class="relative aspect-[4/3] bg-slate-100 overflow-hidden">' +
+            '<div class="flex h-full transition-transform duration-300" id="track-' + prod.id + '" style="transform: translateX(-' + (current * 100) + '%);">' +
+              imgs.map(function(s) {
+                return '<div class="flex-shrink-0 w-full h-full cursor-pointer" onclick="window.location.href=\'product.html?id=' + prod.id + '\'">' +
+                  '<img src="' + escapeAttr(s) + '" alt="' + escapeAttr(prod.designation) + '" class="w-full h-full object-cover" loading="lazy" onerror="this.src=\'https://placehold.co/600x450?text=Photo\'">' +
+                '</div>';
+              }).join('') +
+            '</div>' +
+            (hasMulti ? (
+              '<button type="button" onclick="event.stopPropagation(); changeSlide(\'' + prod.id + '\', -1)" class="slider-arrow prev"><i class="fa-solid fa-chevron-left text-xs"></i></button>' +
+              '<button type="button" onclick="event.stopPropagation(); changeSlide(\'' + prod.id + '\', 1)" class="slider-arrow next"><i class="fa-solid fa-chevron-right text-xs"></i></button>' +
+              '<div class="slider-dots" id="dots-' + prod.id + '">' +
+                imgs.map(function(_, dotIdx) {
+                  return '<span class="slider-dot ' + (dotIdx === current ? 'active' : '') + '"></span>';
+                }).join('') +
+              '</div>'
+            ) : '') +
+          '</div>' +
+          '<div class="p-4 flex flex-col flex-grow cursor-pointer" onclick="window.location.href=\'product.html?id=' + prod.id + '\'">' +
+            '<div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">' + escapeHtml(prod.category) + '</div>' +
+            '<div class="flex items-center justify-between gap-2 mb-2">' +
+              '<span class="font-mono text-xs font-black bg-slate-100 text-slate-900 px-2 py-1 rounded border border-slate-200">REF: ' + escapeHtml(prod.ref) + '</span>' +
+              '<span class="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">Qte: ' + prod.qte + ' ' + escapeHtml(prod.unit || 'pcs') + '</span>' +
+            '</div>' +
+            '<h3 class="font-bold text-sm text-slate-900 line-clamp-2 hover:text-black mb-3">' + escapeHtml(prod.designation) + '</h3>' +
+            '<div class="mt-auto pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-600">' +
+              '<span>View Details & Order</span>' +
+              '<i class="fa-solid fa-arrow-right text-[11px]"></i>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function changeSlide(productId, delta) {
+      var prod = null;
+      for (var i = 0; i < catalogProducts.length; i++) {
+        if (catalogProducts[i].id === productId) { prod = catalogProducts[i]; break; }
+      }
+      if (!prod || !prod.images || prod.images.length <= 1) return;
+
+      var total = prod.images.length;
+      var cur = sliderIndices[productId] || 0;
+      cur = (cur + delta + total) % total;
+      sliderIndices[productId] = cur;
+
+      var track = document.getElementById('track-' + productId);
+      if (track) track.style.transform = 'translateX(-' + (cur * 100) + '%)';
+
+      var dotsContainer = document.getElementById('dots-' + productId);
+      if (dotsContainer) {
+        var dots = dotsContainer.querySelectorAll('.slider-dot');
+        for (var d = 0; d < dots.length; d++) {
+          dots[d].className = 'slider-dot ' + (d === cur ? 'active' : '');
+        }
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return String(str).replace(/"/g, '&quot;');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initCatalog);
+    } else {
+      initCatalog();
+    }
+  </script>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col antialiased">
 
@@ -40,7 +288,7 @@
   <!-- MAIN CATALOG CONTENT -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
     
-    <!-- SEARCH & CATEGORY CONTROLS (SIMPLE & EFFECTIVE) -->
+    <!-- SEARCH & CATEGORY CONTROLS -->
     <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -64,7 +312,6 @@
             id="category-dropdown" 
             class="w-full py-2.5 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
           >
-            <!-- Injected dynamically -->
             <option value="ALL">All Categories</option>
           </select>
         </div>
@@ -85,7 +332,7 @@
 
     <!-- PRODUCT GRID TABLE -->
     <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- Injected dynamically by app.js -->
+      <!-- Injected dynamically -->
     </div>
 
   </main>
@@ -98,8 +345,5 @@
     </div>
   </footer>
 
-  <!-- Scripts with cache-busting parameter -->
-  <script src="js/data.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
 </body>
 </html>

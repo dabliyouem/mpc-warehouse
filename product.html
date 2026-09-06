@@ -9,8 +9,166 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css?v=3">
+
+  <!-- EMBEDDED STYLES (100% Standalone - No css folder needed) -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .slider-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 9999px; background: rgba(0, 0, 0, 0.7); color: white; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; z-index: 10; transition: all 0.2s ease; }
+    .slider-arrow:hover { background: rgba(0, 0, 0, 0.95); transform: translateY(-50%) scale(1.08); }
+    .slider-arrow.prev { left: 10px; }
+    .slider-arrow.next { right: 10px; }
+  </style>
+
+  <!-- EMBEDDED PRODUCT DETAIL LOGIC (100% Standalone - No js folder needed) -->
+  <script>
+    var DEFAULT_PRODUCTS = [
+      { id: "prod-101", ref: "REF-PWR-8820", designation: "Industrial Heavy-Duty Rotary Hammer Drill 1200W", category: "Tools & Equipment", type: "Power Tools", qte: 145, unit: "pcs", description: "High impact rotary drill with anti-vibration handle. Suitable for concrete, masonry, and steel reinforcement drilling. Includes transport case and 3 drill bits.", images: ["https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-102", ref: "REF-PWR-8825", designation: "Brushless Cordless Impact Wrench 20V (4.0Ah Li-ion)", category: "Tools & Equipment", type: "Cordless Tools", qte: 92, unit: "pcs", description: "Variable speed high torque wrench with dual rechargeable lithium batteries. Built-in LED work light and belt clip.", images: ["https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-103", ref: "REF-PLM-4010", designation: "Heavy-Duty Brass Ball Valve 1-inch Female-to-Female", category: "Plumbing & Piping", type: "Valves & Fittings", qte: 620, unit: "pcs", description: "Forged brass construction with chrome-plated ball and PTFE seals. Rated for water, oil, and gas applications up to 600 WOG.", images: ["https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-104", ref: "REF-PLM-4025", designation: "PEX-AL-PEX Multilayer Composite Plumbing Pipe Roll 16mm x 2.0mm", category: "Plumbing & Piping", type: "Pipes & Coils", qte: 75, unit: "rolls", description: "Premium oxygen barrier multilayer pipe for underfloor heating and potable water lines. 100% leak-proof and corrosion-resistant.", images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186c5f8?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-105", ref: "REF-ELC-1205", designation: "Industrial Waterproof Electrical Junction Box IP66", category: "Electrical & Lighting", type: "Enclosures & Wiring", qte: 310, unit: "pcs", description: "ABS thermoplastic waterproof distribution box with transparent polycarbonate door and internal mounting DIN rail.", images: ["https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-106", ref: "REF-ELC-1290", designation: "Commercial High-Bay LED Warehouse Floodlight 150W", category: "Electrical & Lighting", type: "Commercial Lighting", qte: 88, unit: "units", description: "Ultra-bright industrial UFO high bay light with die-cast aluminum heat sink. Instant start with 120° beam angle.", images: ["https://images.unsplash.com/photo-1565814636199-ae8133055c1c?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-107", ref: "REF-LOG-5001", designation: "Standard Euro Wooden Pallet 1200x800mm (Heat Treated ISPM15)", category: "Storage & Packaging", type: "Pallets & Racks", qte: 450, unit: "units", description: "Certified EPAL grade A heavy-duty four-way wooden pallets. Heat treated for export standards.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-108", ref: "REF-LOG-5088", designation: "Industrial Hand Stretch Film Wrap 500mm x 300m (23 Microns)", category: "Storage & Packaging", type: "Packaging Supplies", qte: 850, unit: "rolls", description: "High tensile strength clear cast pallet wrap. Puncture resistant with high cling.", images: ["https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-109", ref: "REF-SAF-3012", designation: "Steel-Toe Safety Work Boots S3 SRC (Waterproof Leather)", category: "Safety & PPE", type: "Footwear", qte: 190, unit: "pairs", description: "Anti-puncture steel midsole, oil-resistant and slip-resistant PU sole with breathable inner lining.", images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-110", ref: "REF-SAF-3040", designation: "High-Visibility Reflective Safety Vests Class 2 (Fluo Yellow)", category: "Safety & PPE", type: "Workwear", qte: 1200, unit: "pcs", description: "100% polyester breathable mesh vest with 2-inch wide 360° reflective strips, front zipper closure.", images: ["https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-111", ref: "REF-MAT-7100", designation: "Galvanized Steel Hex Head Bolts & Nuts Assortment (M8 - M12)", category: "Hardware & Fasteners", type: "Bolts & Screws", qte: 350, unit: "boxes", description: "Grade 8.8 zinc-plated structural carbon steel hex bolts with matching nylon lock nuts and flat washers.", images: ["https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-112", ref: "REF-MAT-7210", designation: "Heavy-Duty Hydraulic Hand Pallet Jack 3.0 Ton (3000 kg)", category: "Storage & Packaging", type: "Handling Equipment", qte: 18, unit: "units", description: "Industrial manual pallet truck with reinforced fork frame and dual tandem polyurethane load rollers.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1587293852726-70cdb56c2866?auto=format&fit=crop&w=900&q=80"] }
+    ];
+
+    var currentProd = null;
+    var currentSlideIdx = 0;
+    var cfg = { phone: "+1 234 567 8900", whatsapp: "12345678900" };
+
+    function initProduct() {
+      var params = new URLSearchParams(window.location.search);
+      var pid = params.get('id');
+
+      var products = [];
+      try {
+        var raw = localStorage.getItem('mpc_warehouse_products');
+        products = (raw && raw !== '[]') ? JSON.parse(raw) : DEFAULT_PRODUCTS;
+      } catch(e) {
+        products = DEFAULT_PRODUCTS;
+      }
+
+      try {
+        var rawCfg = localStorage.getItem('mpc_warehouse_config');
+        if (rawCfg) cfg = JSON.parse(rawCfg);
+      } catch(e) {}
+
+      for (var i = 0; i < products.length; i++) {
+        if (products[i].id === pid) { currentProd = products[i]; break; }
+      }
+      if (!currentProd && products.length > 0) currentProd = products[0];
+
+      var container = document.getElementById('product-detail-view');
+      if (!container || !currentProd) return;
+
+      var imgs = (currentProd.images && currentProd.images.length > 0) ? currentProd.images : ['https://placehold.co/800x600?text=Product+Photo'];
+      var cleanPhone = (cfg.phone || '+1 234 567 8900').replace(/\s+/g, '');
+      var cleanWa = (cfg.whatsapp || '12345678900').replace(/[^0-9]/g, '');
+
+      // Strict WhatsApp message format: REF, Designation, Qte ONLY!
+      var waMsg = "REF: " + currentProd.ref + "\nDesignation: " + currentProd.designation + "\nQte: " + currentProd.qte;
+      var waUrl = "https://wa.me/" + cleanWa + "?text=" + encodeURIComponent(waMsg);
+
+      container.innerHTML = '<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">' +
+        '<div class="space-y-4">' +
+          '<div class="relative aspect-[4/3] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">' +
+            '<img id="main-product-img" src="' + escapeAttr(imgs[0]) + '" alt="' + escapeAttr(currentProd.designation) + '" class="w-full h-full object-cover" onerror="this.src=\'https://placehold.co/800x600?text=Photo\'">' +
+            (imgs.length > 1 ? (
+              '<button type="button" onclick="changeSlide(-1)" class="slider-arrow prev"><i class="fa-solid fa-chevron-left text-sm"></i></button>' +
+              '<button type="button" onclick="changeSlide(1)" class="slider-arrow next"><i class="fa-solid fa-chevron-right text-sm"></i></button>'
+            ) : '') +
+          '</div>' +
+          (imgs.length > 1 ? (
+            '<div class="flex items-center gap-2 overflow-x-auto pb-2" id="detail-thumbs">' +
+              imgs.map(function(s, idx) {
+                return '<button type="button" onclick="setSlide(' + idx + ')" class="thumb-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ' + (idx === 0 ? 'border-black' : 'border-slate-200') + '">' +
+                  '<img src="' + escapeAttr(s) + '" alt="thumb" class="w-full h-full object-cover">' +
+                '</button>';
+              }).join('') +
+            '</div>'
+          ) : '') +
+        '</div>' +
+
+        '<div class="space-y-6">' +
+          '<div class="text-xs font-bold uppercase tracking-wider text-slate-400">' + escapeHtml(currentProd.category) + (currentProd.type ? ' • ' + escapeHtml(currentProd.type) : '') + '</div>' +
+          '<h1 class="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">' + escapeHtml(currentProd.designation) + '</h1>' +
+
+          '<div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">' +
+            '<div>' +
+              '<span class="text-xs font-bold text-slate-400 uppercase">Product Reference</span>' +
+              '<div class="font-mono text-lg font-black text-slate-900 mt-0.5">REF: ' + escapeHtml(currentProd.ref) + '</div>' +
+            '</div>' +
+            '<div>' +
+              '<span class="text-xs font-bold text-slate-400 uppercase">Available Stock</span>' +
+              '<div class="text-lg font-black text-emerald-700 mt-0.5">QTE: ' + currentProd.qte + ' ' + escapeHtml(currentProd.unit || 'pcs') + '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div>' +
+            '<h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Details & Specifications</h3>' +
+            '<p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line">' + escapeHtml(currentProd.description || 'In-stock warehouse inventory item ready for immediate order and pickup.') + '</p>' +
+          '</div>' +
+
+          '<div class="pt-4 border-t border-slate-200 space-y-3">' +
+            '<span class="text-xs font-bold text-slate-500 block">Order directly from warehouse:</span>' +
+            '<a href="' + waUrl + '" target="_blank" rel="noopener noreferrer" class="w-full py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center gap-2.5 shadow-md transition-all">' +
+              '<i class="fa-brands fa-whatsapp text-lg"></i>' +
+              '<span>Send Order on WhatsApp</span>' +
+            '</a>' +
+            '<a href="tel:' + cleanPhone + '" class="w-full py-3 px-6 rounded-xl bg-black hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all">' +
+              '<i class="fa-solid fa-phone text-xs"></i>' +
+              '<span>Call Us: ' + escapeHtml(cfg.phone || '+1 234 567 8900') + '</span>' +
+            '</a>' +
+            '<div class="text-[11px] text-slate-400 bg-slate-100 p-2.5 rounded-lg">' +
+              '<span class="font-bold text-slate-600">WhatsApp Message Sent:</span>' +
+              '<pre class="mt-1 font-mono text-[10px] text-slate-700">' + escapeHtml(waMsg) + '</pre>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function changeSlide(delta) {
+      if (!currentProd || !currentProd.images || currentProd.images.length <= 1) return;
+      var total = currentProd.images.length;
+      currentSlideIdx = (currentSlideIdx + delta + total) % total;
+      setSlide(currentSlideIdx);
+    }
+
+    function setSlide(idx) {
+      if (!currentProd || !currentProd.images) return;
+      currentSlideIdx = idx;
+      var img = document.getElementById('main-product-img');
+      if (img) img.src = currentProd.images[idx];
+
+      var thumbs = document.querySelectorAll('.thumb-btn');
+      for (var t = 0; t < thumbs.length; t++) {
+        thumbs[t].className = 'thumb-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ' + (t === idx ? 'border-black' : 'border-slate-200');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return String(str).replace(/"/g, '&quot;');
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initProduct);
+    } else {
+      initProduct();
+    }
+  </script>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col antialiased">
 
@@ -40,7 +198,7 @@
   <!-- DEDICATED PRODUCT DETAILS CONTAINER -->
   <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
     <div id="product-detail-view" class="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-sm">
-      <!-- Injected dynamically by initProductDetailPage in app.js -->
+      <!-- Rendered by initProduct() -->
     </div>
   </main>
 
@@ -52,8 +210,5 @@
     </div>
   </footer>
 
-  <!-- Scripts with cache-busting parameter -->
-  <script src="js/data.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
 </body>
 </html>
