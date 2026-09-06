@@ -3,7 +3,7 @@ const DEFAULT_CONFIG = {
   warehouseName: "MPC/SRC WAREHOUSE",
   phone: "+1 234 567 8900",
   whatsapp: "12345678900", // International format digits only for wa.me
-  adminPassword: "admin123" // Default password for admin panel
+  adminPassword: "DABLIYOU12" // Default password for admin panel
 };
 
 const INITIAL_PRODUCTS = [
