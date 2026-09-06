@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - MPC/SRC WAREHOUSE</title>
   
-  <!-- Inline Early Auth Handling (Bypasses any storage delay) -->
+  <!-- Inline Early Auth Handling -->
   <script>
     if (window.location.search.includes('unlocked=true')) {
       try {
@@ -20,7 +20,7 @@
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col antialiased">
 
@@ -30,7 +30,7 @@
       
       <!-- Title: MPC/SRC WAREHOUSE -->
       <div class="flex items-center gap-2">
-        <span class="text-base sm:text-lg font-black tracking-tight text-white">MPC/SRC WAREHOUSE</span>
+        <a href="index.html" class="text-base sm:text-lg font-black tracking-tight text-white hover:opacity-90">MPC/SRC WAREHOUSE</a>
         <span class="text-[11px] font-bold uppercase tracking-wider bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded border border-neutral-700">Admin</span>
       </div>
 
@@ -38,14 +38,14 @@
       <div class="flex items-center gap-2 sm:gap-3">
         <a 
           href="index.html" 
-          class="px-3 py-1.5 rounded-xl text-xs font-bold border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 transition-colors flex items-center gap-1.5 text-neutral-300"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 transition-colors flex items-center gap-1.5 text-neutral-300"
         >
           <i class="fa-solid fa-eye text-xs"></i>
-          <span class="hidden sm:inline">View Site</span>
+          <span class="hidden sm:inline">View Catalog</span>
         </a>
         <button 
-          onclick="window.app.logoutAdmin()"
-          class="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 transition-colors flex items-center gap-1.5 text-white shadow-xs"
+          onclick="logout()"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 transition-colors flex items-center gap-1.5 text-white shadow-xs"
         >
           <i class="fa-solid fa-right-from-bracket text-xs"></i>
           <span>Logout</span>
@@ -58,48 +58,79 @@
   <!-- ADMIN WORKSPACE -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
     
+    <!-- Toast Feedback Notification -->
+    <div id="admin-toast" class="hidden fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-black text-white text-xs font-bold shadow-2xl flex items-center gap-2 transition-all">
+      <i class="fa-solid fa-circle-check text-emerald-400"></i>
+      <span id="admin-toast-msg">Action successful</span>
+    </div>
+
     <!-- Navigation Tabs -->
     <div class="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs flex items-center gap-2 overflow-x-auto">
       <button 
+        type="button"
         id="tab-btn-table"
-        onclick="window.app.switchAdminSection('table')"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap"
+        onclick="switchTab('table')"
+        class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5"
       >
-        <i class="fa-solid fa-boxes-stacked mr-1.5"></i> Inventory & Stock
+        <i class="fa-solid fa-boxes-stacked"></i>
+        <span>Inventory & Stock</span>
       </button>
       <button 
+        type="button"
         id="tab-btn-form"
-        onclick="window.app.switchAdminSection('form')"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap"
+        onclick="switchTab('form')"
+        class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5"
       >
-        <i class="fa-solid fa-plus mr-1.5"></i> Add Product
+        <i class="fa-solid fa-plus text-orange-600"></i>
+        <span>Add New Product</span>
       </button>
       <button 
+        type="button"
         id="tab-btn-settings"
-        onclick="window.app.switchAdminSection('settings')"
-        class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap"
+        onclick="switchTab('settings')"
+        class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5"
       >
-        <i class="fa-solid fa-sliders mr-1.5"></i> Settings & Phone
+        <i class="fa-solid fa-sliders"></i>
+        <span>Settings & Phone</span>
       </button>
     </div>
 
     <!-- SECTION 1: INVENTORY TABLE -->
     <section id="sec-inventory-table" class="space-y-4">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200">
+      
+      <!-- Top Action Bar -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
         <div>
-          <h2 class="text-base font-bold text-slate-900">Current Warehouse Products</h2>
-          <p class="text-xs text-slate-500">Edit quantities directly in the box below. Click Edit for full details.</p>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-black text-slate-900">Current Warehouse Products</h2>
+            <span id="admin-total-items" class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700">0 products</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Edit quantities directly in the table. Click Edit to change details.</p>
         </div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <span id="admin-total-items" class="text-xs font-bold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">0 products</span>
-          <button onclick="window.app.exportCatalogJson()" class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50">
-            <i class="fa-solid fa-download mr-1"></i> Export JSON
+        
+        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+          <!-- Big Add Product Button -->
+          <button 
+            type="button"
+            onclick="switchTab('form')" 
+            class="px-4 py-2 rounded-xl bg-black hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+          >
+            <i class="fa-solid fa-plus text-orange-400"></i>
+            <span>+ Add Product</span>
           </button>
-          <label class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer">
-            <i class="fa-solid fa-upload mr-1"></i> Import JSON
-            <input type="file" accept=".json" class="hidden" onchange="window.app.importCatalogJson(this)">
+
+          <button type="button" onclick="exportJson()" class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1">
+            <i class="fa-solid fa-download"></i>
+            <span>Export JSON</span>
+          </button>
+          
+          <label class="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-1">
+            <i class="fa-solid fa-upload"></i>
+            <span>Import JSON</span>
+            <input type="file" accept=".json" class="hidden" onchange="importJson(this)">
           </label>
-          <button onclick="window.app.restoreDefaultCatalog()" class="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold">
+          
+          <button type="button" onclick="resetSample()" class="px-3 py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold" title="Reset back to default sample items">
             Reset Sample
           </button>
         </div>
@@ -115,12 +146,12 @@
                 <th class="py-3 px-4">Reference</th>
                 <th class="py-3 px-4">Designation</th>
                 <th class="py-3 px-4">Category</th>
-                <th class="py-3 px-4 text-center">Available Stock</th>
+                <th class="py-3 px-4 text-center">Stock Qte</th>
                 <th class="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody id="admin-inventory-tbody" class="divide-y divide-slate-100">
-              <!-- Injected dynamically -->
+              <!-- Dynamically rendered -->
             </tbody>
           </table>
         </div>
@@ -130,18 +161,22 @@
     <!-- SECTION 2: ADD / EDIT PRODUCT FORM -->
     <section id="sec-product-form" class="hidden">
       <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
+        
         <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-          <h2 id="product-form-title" class="text-lg font-black text-slate-900">Add New Product</h2>
-          <button type="button" onclick="window.app.resetAdminProductForm(); window.app.switchAdminSection('table');" class="text-xs font-bold text-slate-400 hover:text-slate-700">
-            Cancel
+          <div>
+            <h2 id="product-form-title" class="text-lg font-black text-slate-900">Add New Product</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Enter product details and stock quantity</p>
+          </div>
+          <button type="button" onclick="cancelProductForm()" class="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 bg-slate-100 rounded-lg">
+            ← Back to Table
           </button>
         </div>
 
-        <form id="admin-product-form" class="space-y-4">
+        <form id="admin-product-form" onsubmit="return saveProduct(event)" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label for="prod-ref" class="block text-xs font-bold text-slate-700 mb-1">Product Reference (REF) *</label>
-              <input type="text" id="prod-ref" required placeholder="e.g. REF-TOOL-100" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-black">
+              <input type="text" id="prod-ref" required placeholder="e.g. REF-TOOL-99" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-black">
             </div>
             <div>
               <label for="prod-category" class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
@@ -167,14 +202,14 @@
             </div>
             <div>
               <label for="prod-unit" class="block text-xs font-bold text-slate-700 mb-1">Unit of Measure</label>
-              <input type="text" id="prod-unit" placeholder="pcs, rolls, boxes..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-black">
+              <input type="text" id="prod-unit" placeholder="pcs, rolls, boxes..." value="pcs" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-black">
             </div>
           </div>
 
           <div>
-            <label for="prod-images" class="block text-xs font-bold text-slate-700 mb-1">Image URLs (One URL per line for slideshow)</label>
+            <label for="prod-images" class="block text-xs font-bold text-slate-700 mb-1">Image URLs (One URL per line for multiple photo slider)</label>
             <textarea id="prod-images" rows="3" placeholder="https://images.unsplash.com/...&#10;https://images.unsplash.com/..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-black"></textarea>
-            <span class="text-[11px] text-slate-400">Add multiple links to enable the photo slider for this item.</span>
+            <span class="text-[11px] text-slate-400">Paste one or more image links to show multiple photos for this item.</span>
           </div>
 
           <div>
@@ -183,7 +218,7 @@
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-3">
-            <button type="button" onclick="window.app.switchAdminSection('table')" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100">
+            <button type="button" onclick="cancelProductForm()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100">
               Cancel
             </button>
             <button type="submit" id="product-form-submit-btn" class="px-6 py-2.5 rounded-xl text-xs font-bold bg-black text-white hover:bg-slate-800 shadow-md">
@@ -197,12 +232,13 @@
     <!-- SECTION 3: SETTINGS -->
     <section id="sec-settings" class="hidden">
       <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm max-w-xl mx-auto space-y-6">
+        
         <div>
           <h2 class="text-lg font-black text-slate-900">Warehouse Contact & Password</h2>
-          <p class="text-xs text-slate-500">Used for WhatsApp order links and phone calls</p>
+          <p class="text-xs text-slate-500">Update phone number for calls, WhatsApp number for orders, and admin password</p>
         </div>
 
-        <form id="admin-settings-form" class="space-y-4">
+        <form id="admin-settings-form" onsubmit="return saveSettings(event)" class="space-y-4">
           <div>
             <label for="cfg-whatsapp" class="block text-xs font-bold text-slate-700 mb-1">WhatsApp Number (Digits only, including country code)</label>
             <input type="text" id="cfg-whatsapp" required placeholder="e.g. 12345678900" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
@@ -235,8 +271,361 @@
     <p>MPC/SRC WAREHOUSE • Administration</p>
   </footer>
 
-  <!-- Scripts with cache bust -->
-  <script src="js/data.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <!-- External Defaults -->
+  <script src="js/data.js?v=4"></script>
+
+  <!-- SELF-CONTAINED INLINE ADMIN LOGIC (Zero reliance on CDN caching) -->
+  <script>
+    var currentEditingId = null;
+    var adminProducts = [];
+    var adminConfig = {};
+
+    function initAdmin() {
+      loadAdminData();
+      renderTable();
+      loadSettingsForm();
+    }
+
+    function loadAdminData() {
+      // Products
+      try {
+        var rawProds = localStorage.getItem('mpc_warehouse_products');
+        if (rawProds) {
+          adminProducts = JSON.parse(rawProds);
+        } else if (typeof INITIAL_PRODUCTS !== 'undefined') {
+          adminProducts = [...INITIAL_PRODUCTS];
+        } else {
+          adminProducts = [];
+        }
+      } catch(e) {
+        adminProducts = typeof INITIAL_PRODUCTS !== 'undefined' ? [...INITIAL_PRODUCTS] : [];
+      }
+
+      // Config
+      try {
+        var rawCfg = localStorage.getItem('mpc_warehouse_config');
+        if (rawCfg) {
+          adminConfig = JSON.parse(rawCfg);
+        } else if (typeof DEFAULT_CONFIG !== 'undefined') {
+          adminConfig = { ...DEFAULT_CONFIG };
+        } else {
+          adminConfig = { warehouseName: 'MPC/SRC WAREHOUSE', phone: '+1 234 567 8900', whatsapp: '12345678900', adminPassword: 'admin123' };
+        }
+      } catch(e) {
+        adminConfig = typeof DEFAULT_CONFIG !== 'undefined' ? { ...DEFAULT_CONFIG } : {};
+      }
+    }
+
+    function saveProdsToStorage() {
+      try {
+        localStorage.setItem('mpc_warehouse_products', JSON.stringify(adminProducts));
+      } catch(e) {
+        console.error('Error saving products:', e);
+      }
+    }
+
+    function saveCfgToStorage() {
+      try {
+        localStorage.setItem('mpc_warehouse_config', JSON.stringify(adminConfig));
+      } catch(e) {
+        console.error('Error saving config:', e);
+      }
+    }
+
+    function switchTab(tabName) {
+      var secTable = document.getElementById('sec-inventory-table');
+      var secForm = document.getElementById('sec-product-form');
+      var secSettings = document.getElementById('sec-settings');
+
+      var btnTable = document.getElementById('tab-btn-table');
+      var btnForm = document.getElementById('tab-btn-form');
+      var btnSettings = document.getElementById('tab-btn-settings');
+
+      // Hide all
+      if (secTable) secTable.classList.add('hidden');
+      if (secForm) secForm.classList.add('hidden');
+      if (secSettings) secSettings.classList.add('hidden');
+
+      // Reset button styles
+      [btnTable, btnForm, btnSettings].forEach(function(btn) {
+        if (btn) {
+          btn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5';
+        }
+      });
+
+      if (tabName === 'form') {
+        if (secForm) secForm.classList.remove('hidden');
+        if (btnForm) btnForm.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5';
+      } else if (tabName === 'settings') {
+        if (secSettings) secSettings.classList.remove('hidden');
+        if (btnSettings) btnSettings.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5';
+        loadSettingsForm();
+      } else {
+        if (secTable) secTable.classList.remove('hidden');
+        if (btnTable) btnTable.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5';
+        renderTable();
+      }
+    }
+
+    function renderTable() {
+      var tbody = document.getElementById('admin-inventory-tbody');
+      var countBadge = document.getElementById('admin-total-items');
+      if (!tbody) return;
+
+      if (countBadge) countBadge.textContent = adminProducts.length + ' products';
+
+      if (adminProducts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">No products in inventory. Click "+ Add Product" to create one.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = adminProducts.map(function(p) {
+        var img = (p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/100x100?text=No+Photo';
+        var refSafe = escapeHtml(p.ref || '');
+        var desSafe = escapeHtml(p.designation || '');
+        var catSafe = escapeHtml(p.category || '');
+        var unitSafe = escapeHtml(p.unit || 'pcs');
+
+        return '<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">' +
+          '<td class="py-3 px-4 w-16">' +
+            '<img src="' + escapeAttr(img) + '" alt="img" class="w-12 h-12 rounded-lg object-cover bg-slate-100 border border-slate-200">' +
+          '</td>' +
+          '<td class="py-3 px-4 font-mono font-bold text-xs text-slate-900">' + refSafe + '</td>' +
+          '<td class="py-3 px-4 font-bold text-xs text-slate-900 max-w-xs truncate">' + desSafe + '</td>' +
+          '<td class="py-3 px-4 text-xs text-slate-600">' + catSafe + '</td>' +
+          '<td class="py-3 px-4 text-center">' +
+            '<input type="number" value="' + p.qte + '" min="0" class="w-20 text-center font-bold text-xs py-1.5 px-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black" onchange="quickUpdateQte(\'' + p.id + '\', this.value)">' +
+          '</td>' +
+          '<td class="py-3 px-4 text-right whitespace-nowrap">' +
+            '<button type="button" onclick="editProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded mr-1">Edit</button>' +
+            '<button type="button" onclick="deleteProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded">Delete</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function quickUpdateQte(productId, newVal) {
+      var qte = parseInt(newVal, 10);
+      if (isNaN(qte) || qte < 0) return;
+      var prod = adminProducts.find(function(p) { return p.id === productId; });
+      if (prod) {
+        prod.qte = qte;
+        saveProdsToStorage();
+        showFeedback('Stock Qte updated to ' + qte);
+      }
+    }
+
+    function editProduct(productId) {
+      var prod = adminProducts.find(function(p) { return p.id === productId; });
+      if (!prod) return;
+
+      currentEditingId = productId;
+      document.getElementById('prod-ref').value = prod.ref || '';
+      document.getElementById('prod-designation').value = prod.designation || '';
+      document.getElementById('prod-category').value = prod.category || '';
+      document.getElementById('prod-type').value = prod.type || '';
+      document.getElementById('prod-qte').value = prod.qte || 0;
+      document.getElementById('prod-unit').value = prod.unit || 'pcs';
+      document.getElementById('prod-images').value = (prod.images || []).join('\n');
+      document.getElementById('prod-description').value = prod.description || '';
+
+      var title = document.getElementById('product-form-title');
+      var submitBtn = document.getElementById('product-form-submit-btn');
+      if (title) title.textContent = 'Edit Product: ' + prod.ref;
+      if (submitBtn) submitBtn.textContent = 'Save Changes';
+
+      switchTab('form');
+    }
+
+    function cancelProductForm() {
+      currentEditingId = null;
+      var form = document.getElementById('admin-product-form');
+      if (form) form.reset();
+      var title = document.getElementById('product-form-title');
+      var submitBtn = document.getElementById('product-form-submit-btn');
+      if (title) title.textContent = 'Add New Product';
+      if (submitBtn) submitBtn.textContent = 'Save Product';
+      switchTab('table');
+    }
+
+    function saveProduct(e) {
+      if (e) e.preventDefault();
+
+      var ref = document.getElementById('prod-ref').value.trim();
+      var designation = document.getElementById('prod-designation').value.trim();
+      var category = document.getElementById('prod-category').value.trim();
+      var type = document.getElementById('prod-type').value.trim();
+      var qte = parseInt(document.getElementById('prod-qte').value, 10) || 0;
+      var unit = document.getElementById('prod-unit').value.trim() || 'pcs';
+      var imagesRaw = document.getElementById('prod-images').value.trim();
+      var description = document.getElementById('prod-description').value.trim();
+
+      if (!ref || !designation || !category) {
+        alert('Please fill in Reference, Designation, and Category!');
+        return false;
+      }
+
+      var images = imagesRaw
+        ? imagesRaw.split(/[\n,]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; })
+        : ['https://placehold.co/600x450?text=Warehouse+Stock'];
+
+      if (currentEditingId) {
+        var prod = adminProducts.find(function(p) { return p.id === currentEditingId; });
+        if (prod) {
+          prod.ref = ref;
+          prod.designation = designation;
+          prod.category = category;
+          prod.type = type;
+          prod.qte = qte;
+          prod.unit = unit;
+          prod.images = images;
+          prod.description = description;
+        }
+        showFeedback('Product updated successfully!');
+      } else {
+        var newProd = {
+          id: 'prod-' + Date.now(),
+          ref: ref,
+          designation: designation,
+          category: category,
+          type: type,
+          qte: qte,
+          unit: unit,
+          images: images,
+          description: description
+        };
+        adminProducts.unshift(newProd);
+        showFeedback('New product added to inventory!');
+      }
+
+      saveProdsToStorage();
+      cancelProductForm();
+      return false;
+    }
+
+    function deleteProduct(productId) {
+      var prod = adminProducts.find(function(p) { return p.id === productId; });
+      if (!prod) return;
+
+      if (confirm('Delete [' + prod.ref + '] - ' + prod.designation + '?')) {
+        adminProducts = adminProducts.filter(function(p) { return p.id !== productId; });
+        saveProdsToStorage();
+        renderTable();
+        showFeedback('Product deleted');
+      }
+    }
+
+    function loadSettingsForm() {
+      var waInput = document.getElementById('cfg-whatsapp');
+      var phoneInput = document.getElementById('cfg-phone');
+      var pwdInput = document.getElementById('cfg-password');
+
+      if (waInput) waInput.value = adminConfig.whatsapp || '12345678900';
+      if (phoneInput) phoneInput.value = adminConfig.phone || '+1 234 567 8900';
+      if (pwdInput) pwdInput.value = adminConfig.adminPassword || 'admin123';
+    }
+
+    function saveSettings(e) {
+      if (e) e.preventDefault();
+
+      var wa = document.getElementById('cfg-whatsapp').value.trim();
+      var phone = document.getElementById('cfg-phone').value.trim();
+      var pwd = document.getElementById('cfg-password').value.trim();
+
+      if (!wa || !phone) {
+        alert('Please fill in WhatsApp number and Phone number!');
+        return false;
+      }
+
+      adminConfig.whatsapp = wa.replace(/[^0-9]/g, '');
+      adminConfig.phone = phone;
+      if (pwd) adminConfig.adminPassword = pwd;
+
+      saveCfgToStorage();
+      showFeedback('Settings & Contact info saved successfully!');
+      return false;
+    }
+
+    function exportJson() {
+      var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(adminProducts, null, 2));
+      var dl = document.createElement('a');
+      dl.setAttribute('href', dataStr);
+      dl.setAttribute('download', 'mpc_warehouse_catalog.json');
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+    }
+
+    function importJson(inputEl) {
+      var file = inputEl.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported) && imported.length > 0) {
+            adminProducts = imported;
+            saveProdsToStorage();
+            renderTable();
+            showFeedback('Imported ' + imported.length + ' products successfully!');
+          } else {
+            alert('Invalid JSON file. Expected an array of products.');
+          }
+        } catch(err) {
+          alert('Error parsing JSON file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetSample() {
+      if (confirm('Restore sample warehouse catalog? This will overwrite local products.')) {
+        if (typeof INITIAL_PRODUCTS !== 'undefined') {
+          adminProducts = [...INITIAL_PRODUCTS];
+        } else {
+          adminProducts = [];
+        }
+        saveProdsToStorage();
+        renderTable();
+        showFeedback('Sample products restored!');
+      }
+    }
+
+    function logout() {
+      try {
+        localStorage.removeItem('mpc_admin_auth');
+        sessionStorage.removeItem('mpc_admin_auth');
+      } catch(e) {}
+      window.location.href = 'index.html';
+    }
+
+    function showFeedback(msg) {
+      var toast = document.getElementById('admin-toast');
+      var toastMsg = document.getElementById('admin-toast-msg');
+      if (toast && toastMsg) {
+        toastMsg.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(function() {
+          toast.classList.add('hidden');
+        }, 2500);
+      } else {
+        alert(msg);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return String(str).replace(/"/g, '&quot;');
+    }
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', initAdmin);
+  </script>
 </body>
 </html>
