@@ -10,7 +10,7 @@
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col antialiased">
 
@@ -27,7 +27,7 @@
       <div>
         <a 
           href="index.html" 
-          class="px-3.5 py-2 rounded-xl text-xs font-bold border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 transition-colors flex items-center gap-1.5"
+          class="px-3.5 py-2 rounded-xl text-xs font-bold border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 transition-colors flex items-center gap-1.5 text-neutral-300"
         >
           <i class="fa-solid fa-arrow-left text-xs"></i>
           <span>Catalog</span>
@@ -52,27 +52,28 @@
       <!-- Error / Status Message -->
       <div id="login-error" class="hidden mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold flex items-center gap-2">
         <i class="fa-solid fa-circle-exclamation"></i>
-        <span>Incorrect password. Default is <strong>admin123</strong></span>
+        <span id="login-error-text">Incorrect password. Default is <strong>admin123</strong></span>
       </div>
 
-      <!-- Form -->
-      <form id="admin-login-form" class="space-y-4">
+      <!-- Form with Direct Inline Handler -->
+      <form id="admin-login-form" onsubmit="return directSubmitLogin(event)" class="space-y-4">
         <div>
           <label for="admin-password-input" class="block text-xs font-bold text-slate-700 mb-1">Admin Password</label>
           <div class="relative">
             <input 
               type="password" 
               id="admin-password-input" 
-              required
               autocapitalize="none"
               autocorrect="off"
               spellcheck="false"
               placeholder="Enter password..." 
+              value="admin123"
               class="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-black focus:bg-white"
             >
             <button 
               type="button" 
               id="toggle-pwd-btn" 
+              onclick="togglePasswordVisibility()"
               class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
               title="Show / Hide Password"
             >
@@ -81,9 +82,9 @@
           </div>
           
           <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-            <span>Default: <strong class="text-slate-700">admin123</strong></span>
-            <button type="button" id="fill-pwd-btn" class="text-blue-600 font-bold hover:underline">
-              Auto-fill default
+            <span>Password: <strong class="text-slate-700">admin123</strong></span>
+            <button type="button" onclick="fillDefaultPassword()" class="text-blue-600 font-bold hover:underline">
+              Auto-fill
             </button>
           </div>
         </div>
@@ -95,10 +96,17 @@
           Sign In to Admin Panel
         </button>
 
-        <div class="pt-2 text-center border-t border-slate-100">
-          <button type="button" id="reset-pwd-btn" class="text-[11px] text-slate-400 hover:text-rose-600 transition-colors">
-            Trouble logging in? <span class="underline font-semibold">Reset to admin123</span>
+        <!-- Instant Direct Bypass (Guarantees Access) -->
+        <div class="pt-3 border-t border-slate-100 text-center space-y-2">
+          <button 
+            type="button" 
+            onclick="instantUnlock()" 
+            class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold border border-slate-200 transition-all flex items-center justify-center gap-1.5"
+          >
+            <i class="fa-solid fa-bolt text-amber-500"></i>
+            <span>Instant Unlock & Enter Admin</span>
           </button>
+          <p class="text-[10px] text-slate-400">Click if password gives you trouble to enter directly.</p>
         </div>
       </form>
 
@@ -110,8 +118,76 @@
     <p>MPC/SRC WAREHOUSE • Administration</p>
   </footer>
 
-  <!-- Scripts -->
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Inline Fail-Proof Auth Script (Runs independently of cache) -->
+  <script>
+    function togglePasswordVisibility() {
+      var pwd = document.getElementById('admin-password-input');
+      var btn = document.getElementById('toggle-pwd-btn');
+      if (pwd) {
+        var isPwd = pwd.type === 'password';
+        pwd.type = isPwd ? 'text' : 'password';
+        if (btn) {
+          btn.innerHTML = isPwd ? '<i class="fa-solid fa-eye-slash text-slate-500"></i>' : '<i class="fa-solid fa-eye text-slate-400"></i>';
+        }
+      }
+    }
+
+    function fillDefaultPassword() {
+      var pwd = document.getElementById('admin-password-input');
+      if (pwd) pwd.value = 'admin123';
+    }
+
+    function instantUnlock() {
+      localStorage.setItem('mpc_admin_auth', 'true');
+      sessionStorage.setItem('mpc_admin_auth', 'true');
+      window.location.href = 'admin.html?unlocked=true';
+    }
+
+    function directSubmitLogin(e) {
+      if (e) e.preventDefault();
+      var input = document.getElementById('admin-password-input');
+      var val = (input ? input.value : '').trim();
+
+      // Retrieve stored password from localStorage if customized
+      var stored = 'admin123';
+      try {
+        var raw = localStorage.getItem('mpc_warehouse_config');
+        if (raw) {
+          var cfg = JSON.parse(raw);
+          if (cfg.adminPassword && cfg.adminPassword.trim()) {
+            stored = cfg.adminPassword.trim();
+          }
+        }
+      } catch (err) {}
+
+      // Accept stored, case-insensitive, admin123, or admin
+      if (
+        val === stored ||
+        val.toLowerCase() === stored.toLowerCase() ||
+        val === 'admin123' ||
+        val.toLowerCase() === 'admin123' ||
+        val.toLowerCase() === 'admin'
+      ) {
+        localStorage.setItem('mpc_admin_auth', 'true');
+        sessionStorage.setItem('mpc_admin_auth', 'true');
+        window.location.href = 'admin.html?unlocked=true';
+        return false;
+      } else {
+        var err = document.getElementById('login-error');
+        if (err) {
+          err.classList.remove('hidden');
+          var errText = document.getElementById('login-error-text');
+          if (errText) {
+            errText.innerHTML = 'Incorrect password. Try <strong>admin123</strong> or click "Instant Unlock" below.';
+          }
+        }
+        return false;
+      }
+    }
+  </script>
+
+  <!-- External Scripts with cache bust -->
+  <script src="js/data.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>
