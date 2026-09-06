@@ -9,8 +9,84 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css?v=3">
+  
+  <!-- EMBEDDED STYLES (100% Standalone - No css folder needed) -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+
+  <!-- INLINE LOGIN LOGIC (100% Standalone - No js folder needed) -->
+  <script>
+    function togglePasswordVisibility() {
+      var pwd = document.getElementById('admin-password-input');
+      var btn = document.getElementById('toggle-pwd-btn');
+      if (pwd) {
+        var isPwd = pwd.type === 'password';
+        pwd.type = isPwd ? 'text' : 'password';
+        if (btn) {
+          btn.innerHTML = isPwd ? '<i class="fa-solid fa-eye-slash text-slate-500"></i>' : '<i class="fa-solid fa-eye text-slate-400"></i>';
+        }
+      }
+    }
+
+    function fillDefaultPassword() {
+      var pwd = document.getElementById('admin-password-input');
+      if (pwd) pwd.value = 'admin123';
+    }
+
+    function instantUnlock() {
+      try {
+        localStorage.setItem('mpc_admin_auth', 'true');
+        sessionStorage.setItem('mpc_admin_auth', 'true');
+      } catch(e) {}
+      window.location.href = 'admin.html?unlocked=true';
+    }
+
+    function directSubmitLogin(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      var input = document.getElementById('admin-password-input');
+      var val = (input ? input.value : '').trim();
+
+      var stored = 'admin123';
+      try {
+        var raw = localStorage.getItem('mpc_warehouse_config');
+        if (raw) {
+          var cfg = JSON.parse(raw);
+          if (cfg.adminPassword && cfg.adminPassword.trim()) {
+            stored = cfg.adminPassword.trim();
+          }
+        }
+      } catch (err) {}
+
+      if (
+        val === stored ||
+        val.toLowerCase() === stored.toLowerCase() ||
+        val === 'admin123' ||
+        val.toLowerCase() === 'admin123' ||
+        val === 'admin' ||
+        val.toLowerCase() === 'admin'
+      ) {
+        try {
+          localStorage.setItem('mpc_admin_auth', 'true');
+          sessionStorage.setItem('mpc_admin_auth', 'true');
+        } catch(e) {}
+        window.location.href = 'admin.html?unlocked=true';
+        return false;
+      } else {
+        var err = document.getElementById('login-error');
+        if (err) {
+          err.classList.remove('hidden');
+          var errText = document.getElementById('login-error-text');
+          if (errText) {
+            errText.innerHTML = 'Incorrect password. Default is <strong>admin123</strong> or click "Instant Unlock" below.';
+          }
+        }
+        return false;
+      }
+    }
+  </script>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col antialiased">
 
@@ -55,7 +131,7 @@
         <span id="login-error-text">Incorrect password. Default is <strong>admin123</strong></span>
       </div>
 
-      <!-- Form with Direct Inline Handler -->
+      <!-- Form -->
       <form id="admin-login-form" onsubmit="return directSubmitLogin(event)" class="space-y-4">
         <div>
           <label for="admin-password-input" class="block text-xs font-bold text-slate-700 mb-1">Admin Password</label>
@@ -82,7 +158,7 @@
           </div>
           
           <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-            <span>Password: <strong class="text-slate-700">admin123</strong></span>
+            <span>Default: <strong class="text-slate-700">admin123</strong></span>
             <button type="button" onclick="fillDefaultPassword()" class="text-blue-600 font-bold hover:underline">
               Auto-fill
             </button>
@@ -118,76 +194,5 @@
     <p>MPC/SRC WAREHOUSE • Administration</p>
   </footer>
 
-  <!-- Inline Fail-Proof Auth Script (Runs independently of cache) -->
-  <script>
-    function togglePasswordVisibility() {
-      var pwd = document.getElementById('admin-password-input');
-      var btn = document.getElementById('toggle-pwd-btn');
-      if (pwd) {
-        var isPwd = pwd.type === 'password';
-        pwd.type = isPwd ? 'text' : 'password';
-        if (btn) {
-          btn.innerHTML = isPwd ? '<i class="fa-solid fa-eye-slash text-slate-500"></i>' : '<i class="fa-solid fa-eye text-slate-400"></i>';
-        }
-      }
-    }
-
-    function fillDefaultPassword() {
-      var pwd = document.getElementById('admin-password-input');
-      if (pwd) pwd.value = 'admin123';
-    }
-
-    function instantUnlock() {
-      localStorage.setItem('mpc_admin_auth', 'true');
-      sessionStorage.setItem('mpc_admin_auth', 'true');
-      window.location.href = 'admin.html?unlocked=true';
-    }
-
-    function directSubmitLogin(e) {
-      if (e) e.preventDefault();
-      var input = document.getElementById('admin-password-input');
-      var val = (input ? input.value : '').trim();
-
-      // Retrieve stored password from localStorage if customized
-      var stored = 'admin123';
-      try {
-        var raw = localStorage.getItem('mpc_warehouse_config');
-        if (raw) {
-          var cfg = JSON.parse(raw);
-          if (cfg.adminPassword && cfg.adminPassword.trim()) {
-            stored = cfg.adminPassword.trim();
-          }
-        }
-      } catch (err) {}
-
-      // Accept stored, case-insensitive, admin123, or admin
-      if (
-        val === stored ||
-        val.toLowerCase() === stored.toLowerCase() ||
-        val === 'admin123' ||
-        val.toLowerCase() === 'admin123' ||
-        val.toLowerCase() === 'admin'
-      ) {
-        localStorage.setItem('mpc_admin_auth', 'true');
-        sessionStorage.setItem('mpc_admin_auth', 'true');
-        window.location.href = 'admin.html?unlocked=true';
-        return false;
-      } else {
-        var err = document.getElementById('login-error');
-        if (err) {
-          err.classList.remove('hidden');
-          var errText = document.getElementById('login-error-text');
-          if (errText) {
-            errText.innerHTML = 'Incorrect password. Try <strong>admin123</strong> or click "Instant Unlock" below.';
-          }
-        }
-        return false;
-      }
-    }
-  </script>
-
-  <!-- External Scripts with cache bust -->
-  <script src="js/data.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
 </body>
 </html>

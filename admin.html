@@ -4,23 +4,444 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - MPC/SRC WAREHOUSE</title>
-  
-  <!-- Inline Early Auth Handling -->
-  <script>
-    if (window.location.search.includes('unlocked=true')) {
-      try {
-        localStorage.setItem('mpc_admin_auth', 'true');
-        sessionStorage.setItem('mpc_admin_auth', 'true');
-      } catch(e) {}
-    }
-  </script>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css?v=4">
+  
+  <!-- EMBEDDED STYLES (100% Standalone - No css folder needed) -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f8fafc; color: #0f172a; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <!-- CRITICAL INLINE SCRIPT IN HEAD (100% Standalone - No js folder needed) -->
+  <script>
+    var DEFAULT_PRODUCTS = [
+      { id: "prod-101", ref: "REF-PWR-8820", designation: "Industrial Heavy-Duty Rotary Hammer Drill 1200W", category: "Tools & Equipment", type: "Power Tools", qte: 145, unit: "pcs", description: "High impact rotary drill with transport case.", images: ["https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=80", "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-102", ref: "REF-PWR-8825", designation: "Brushless Cordless Impact Wrench 20V (4.0Ah Li-ion)", category: "Tools & Equipment", type: "Cordless Tools", qte: 92, unit: "pcs", description: "High torque wrench with dual batteries.", images: ["https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-103", ref: "REF-PLM-4010", designation: "Heavy-Duty Brass Ball Valve 1-inch Female-to-Female", category: "Plumbing & Piping", type: "Valves", qte: 620, unit: "pcs", description: "Forged brass ball valve PN25.", images: ["https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-104", ref: "REF-PLM-4025", designation: "PEX-AL-PEX Multilayer Plumbing Pipe Roll 16mm x 2.0mm", category: "Plumbing & Piping", type: "Pipes", qte: 75, unit: "rolls", description: "100m roll for underfloor heating and water.", images: ["https://images.unsplash.com/photo-1541888946425-d0fbb186c5f8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-105", ref: "REF-ELC-1205", designation: "Industrial Waterproof Electrical Junction Box IP66", category: "Electrical & Lighting", type: "Enclosures", qte: 310, unit: "pcs", description: "ABS thermoplastic waterproof box.", images: ["https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-106", ref: "REF-ELC-1290", designation: "Commercial High-Bay LED Warehouse Floodlight 150W", category: "Electrical & Lighting", type: "Lighting", qte: 88, unit: "units", description: "19,500 lumens high bay light.", images: ["https://images.unsplash.com/photo-1565814636199-ae8133055c1c?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-107", ref: "REF-LOG-5001", designation: "Standard Euro Wooden Pallet 1200x800mm Heat Treated", category: "Storage & Packaging", type: "Pallets", qte: 450, unit: "units", description: "Certified EPAL grade A pallets.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-108", ref: "REF-LOG-5088", designation: "Industrial Hand Stretch Film Wrap 500mm x 300m", category: "Storage & Packaging", type: "Packaging", qte: 850, unit: "rolls", description: "23 microns heavy duty wrap.", images: ["https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-109", ref: "REF-SAF-3012", designation: "Steel-Toe Safety Work Boots S3 SRC Leather", category: "Safety & PPE", type: "Footwear", qte: 190, unit: "pairs", description: "Anti-puncture steel midsole safety shoes.", images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-110", ref: "REF-SAF-3040", designation: "High-Visibility Reflective Safety Vests Class 2", category: "Safety & PPE", type: "Workwear", qte: 1200, unit: "pcs", description: "Reflective vest with front zipper.", images: ["https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-111", ref: "REF-MAT-7100", designation: "Galvanized Steel Hex Head Bolts & Nuts Assortment", category: "Hardware & Fasteners", type: "Fasteners", qte: 350, unit: "boxes", description: "Grade 8.8 zinc plated hex bolts.", images: ["https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=900&q=80"] },
+      { id: "prod-112", ref: "REF-MAT-7210", designation: "Heavy-Duty Hydraulic Hand Pallet Jack 3.0 Ton", category: "Storage & Packaging", type: "Handling", qte: 18, unit: "units", description: "Industrial manual pallet truck 3000kg.", images: ["https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80"] }
+    ];
+
+    var adminProducts = [];
+    var adminConfig = {
+      warehouseName: "MPC/SRC WAREHOUSE",
+      phone: "+1 234 567 8900",
+      whatsapp: "12345678900",
+      adminPassword: "admin123"
+    };
+    var currentEditingId = null;
+
+    function loadAdminData() {
+      try {
+        var rawProds = localStorage.getItem('mpc_warehouse_products');
+        if (rawProds && rawProds !== '[]') {
+          adminProducts = JSON.parse(rawProds);
+        } else {
+          adminProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        }
+      } catch(e) {
+        adminProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+      }
+
+      try {
+        var rawCfg = localStorage.getItem('mpc_warehouse_config');
+        if (rawCfg) {
+          adminConfig = JSON.parse(rawCfg);
+        }
+      } catch(e) {}
+    }
+
+    function saveProdsToStorage() {
+      try {
+        localStorage.setItem('mpc_warehouse_products', JSON.stringify(adminProducts));
+      } catch(e) {}
+    }
+
+    function saveCfgToStorage() {
+      try {
+        localStorage.setItem('mpc_warehouse_config', JSON.stringify(adminConfig));
+      } catch(e) {}
+    }
+
+    function switchTab(tabName) {
+      var secTable = document.getElementById('sec-inventory-table');
+      var secForm = document.getElementById('sec-product-form');
+      var secSettings = document.getElementById('sec-settings');
+
+      var btnTable = document.getElementById('tab-btn-table');
+      var btnForm = document.getElementById('tab-btn-form');
+      var btnSettings = document.getElementById('tab-btn-settings');
+
+      if (secTable) secTable.style.display = 'none';
+      if (secForm) secForm.style.display = 'none';
+      if (secSettings) secSettings.style.display = 'none';
+
+      var inactive = "px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5";
+      var active = "px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5 shadow-sm";
+
+      if (btnTable) btnTable.className = inactive;
+      if (btnForm) btnForm.className = inactive;
+      if (btnSettings) btnSettings.className = inactive;
+
+      if (tabName === 'form') {
+        if (secForm) secForm.style.display = 'block';
+        if (btnForm) btnForm.className = active;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (tabName === 'settings') {
+        if (secSettings) secSettings.style.display = 'block';
+        if (btnSettings) btnSettings.className = active;
+        loadSettingsForm();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        if (secTable) secTable.style.display = 'block';
+        if (btnTable) btnTable.className = active;
+        renderTable();
+      }
+    }
+
+    function renderTable() {
+      var tbody = document.getElementById('admin-inventory-tbody');
+      var countBadge = document.getElementById('admin-total-items');
+      if (!tbody) return;
+
+      if (countBadge) countBadge.textContent = adminProducts.length + ' products';
+
+      if (!adminProducts || adminProducts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-slate-400 font-bold">No products in inventory. Click "+ Add Product" to add your first item.</td></tr>';
+        return;
+      }
+
+      var rowsHtml = '';
+      for (var i = 0; i < adminProducts.length; i++) {
+        var p = adminProducts[i];
+        var img = (p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/100x100?text=No+Photo';
+        var refSafe = escapeHtml(p.ref || 'REF');
+        var desSafe = escapeHtml(p.designation || 'Untitled');
+        var catSafe = escapeHtml(p.category || 'General');
+        var qteVal = (p.qte !== undefined) ? p.qte : 0;
+
+        rowsHtml += '<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">' +
+          '<td class="py-3 px-4 w-16">' +
+            '<img src="' + escapeAttr(img) + '" alt="img" class="w-12 h-12 rounded-lg object-cover bg-slate-100 border border-slate-200" onerror="this.src=\'https://placehold.co/100x100?text=Photo\'">' +
+          '</td>' +
+          '<td class="py-3 px-4 font-mono font-bold text-xs text-slate-900">' + refSafe + '</td>' +
+          '<td class="py-3 px-4 font-bold text-xs text-slate-900 max-w-xs truncate">' + desSafe + '</td>' +
+          '<td class="py-3 px-4 text-xs text-slate-600">' + catSafe + '</td>' +
+          '<td class="py-3 px-4 text-center">' +
+            '<input type="number" value="' + qteVal + '" min="0" class="w-20 text-center font-bold text-xs py-1.5 px-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black" onchange="quickUpdateQte(\'' + p.id + '\', this.value)">' +
+          '</td>' +
+          '<td class="py-3 px-4 text-right whitespace-nowrap">' +
+            '<button type="button" onclick="editProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded mr-1.5 border border-blue-200">Edit</button>' +
+            '<button type="button" onclick="deleteProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded border border-rose-200">Delete</button>' +
+          '</td>' +
+        '</tr>';
+      }
+      tbody.innerHTML = rowsHtml;
+    }
+
+    function quickUpdateQte(productId, newVal) {
+      var qte = parseInt(newVal, 10);
+      if (isNaN(qte) || qte < 0) return;
+      for (var i = 0; i < adminProducts.length; i++) {
+        if (adminProducts[i].id === productId) {
+          adminProducts[i].qte = qte;
+          break;
+        }
+      }
+      saveProdsToStorage();
+      showAlert('Stock updated to ' + qte);
+    }
+
+    function editProduct(productId) {
+      var prod = null;
+      for (var i = 0; i < adminProducts.length; i++) {
+        if (adminProducts[i].id === productId) {
+          prod = adminProducts[i];
+          break;
+        }
+      }
+      if (!prod) return;
+
+      currentEditingId = productId;
+      document.getElementById('prod-ref').value = prod.ref || '';
+      document.getElementById('prod-designation').value = prod.designation || '';
+      document.getElementById('prod-category').value = prod.category || '';
+      document.getElementById('prod-type').value = prod.type || '';
+      document.getElementById('prod-qte').value = prod.qte || 0;
+      document.getElementById('prod-unit').value = prod.unit || 'pcs';
+      document.getElementById('prod-images').value = (prod.images || []).join('\n');
+      document.getElementById('prod-description').value = prod.description || '';
+
+      var title = document.getElementById('product-form-title');
+      var submitBtn = document.getElementById('product-form-submit-btn');
+      if (title) title.textContent = 'Edit Product: ' + prod.ref;
+      if (submitBtn) submitBtn.textContent = 'Save Changes';
+
+      switchTab('form');
+    }
+
+    function cancelProductForm() {
+      currentEditingId = null;
+      var form = document.getElementById('admin-product-form');
+      if (form) form.reset();
+      var title = document.getElementById('product-form-title');
+      var submitBtn = document.getElementById('product-form-submit-btn');
+      if (title) title.textContent = 'Add New Product';
+      if (submitBtn) submitBtn.textContent = 'Save Product';
+      switchTab('table');
+    }
+
+    function saveProduct(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      var refInput = document.getElementById('prod-ref');
+      var desInput = document.getElementById('prod-designation');
+      var catInput = document.getElementById('prod-category');
+      var typeInput = document.getElementById('prod-type');
+      var qteInput = document.getElementById('prod-qte');
+      var unitInput = document.getElementById('prod-unit');
+      var imagesInput = document.getElementById('prod-images');
+      var descInput = document.getElementById('prod-description');
+
+      var ref = refInput ? refInput.value.trim() : '';
+      var designation = desInput ? desInput.value.trim() : '';
+      var category = catInput ? catInput.value.trim() : '';
+      var type = typeInput ? typeInput.value.trim() : '';
+      var qte = qteInput ? (parseInt(qteInput.value, 10) || 0) : 0;
+      var unit = unitInput && unitInput.value.trim() ? unitInput.value.trim() : 'pcs';
+      var imagesRaw = imagesInput ? imagesInput.value.trim() : '';
+      var description = descInput ? descInput.value.trim() : '';
+
+      if (!ref) {
+        alert('Please enter a Reference Code (REF).');
+        if (refInput) refInput.focus();
+        return false;
+      }
+      if (!designation) {
+        alert('Please enter a Product Designation (Name).');
+        if (desInput) desInput.focus();
+        return false;
+      }
+      if (!category) {
+        alert('Please enter a Category.');
+        if (catInput) catInput.focus();
+        return false;
+      }
+
+      var images = [];
+      if (imagesRaw) {
+        var lines = imagesRaw.split(/[\n,]+/);
+        for (var j = 0; j < lines.length; j++) {
+          var trimmed = lines[j].trim();
+          if (trimmed) images.push(trimmed);
+        }
+      }
+      if (images.length === 0) {
+        images = ['https://placehold.co/600x450?text=Warehouse+Stock'];
+      }
+
+      if (currentEditingId) {
+        for (var k = 0; k < adminProducts.length; k++) {
+          if (adminProducts[k].id === currentEditingId) {
+            adminProducts[k].ref = ref;
+            adminProducts[k].designation = designation;
+            adminProducts[k].category = category;
+            adminProducts[k].type = type;
+            adminProducts[k].qte = qte;
+            adminProducts[k].unit = unit;
+            adminProducts[k].images = images;
+            adminProducts[k].description = description;
+            break;
+          }
+        }
+        showAlert('✅ Product [' + ref + '] updated successfully!');
+      } else {
+        var newProd = {
+          id: 'prod-' + Date.now(),
+          ref: ref,
+          designation: designation,
+          category: category,
+          type: type,
+          qte: qte,
+          unit: unit,
+          images: images,
+          description: description
+        };
+        adminProducts.unshift(newProd);
+        showAlert('✅ Product [' + ref + '] added to inventory!');
+      }
+
+      saveProdsToStorage();
+      cancelProductForm();
+      return false;
+    }
+
+    function deleteProduct(productId) {
+      var prod = null;
+      for (var i = 0; i < adminProducts.length; i++) {
+        if (adminProducts[i].id === productId) {
+          prod = adminProducts[i];
+          break;
+        }
+      }
+      if (!prod) return;
+
+      if (confirm('Delete [' + prod.ref + '] - ' + prod.designation + '?')) {
+        var filtered = [];
+        for (var j = 0; j < adminProducts.length; j++) {
+          if (adminProducts[j].id !== productId) {
+            filtered.push(adminProducts[j]);
+          }
+        }
+        adminProducts = filtered;
+        saveProdsToStorage();
+        renderTable();
+        showAlert('Product removed.');
+      }
+    }
+
+    function loadSettingsForm() {
+      var waInput = document.getElementById('cfg-whatsapp');
+      var phoneInput = document.getElementById('cfg-phone');
+      var pwdInput = document.getElementById('cfg-password');
+
+      if (waInput) waInput.value = adminConfig.whatsapp || '12345678900';
+      if (phoneInput) phoneInput.value = adminConfig.phone || '+1 234 567 8900';
+      if (pwdInput) pwdInput.value = adminConfig.adminPassword || 'admin123';
+    }
+
+    function saveSettings(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      var waInput = document.getElementById('cfg-whatsapp');
+      var phoneInput = document.getElementById('cfg-phone');
+      var pwdInput = document.getElementById('cfg-password');
+
+      var wa = waInput ? waInput.value.trim() : '';
+      var phone = phoneInput ? phoneInput.value.trim() : '';
+      var pwd = pwdInput ? pwdInput.value.trim() : '';
+
+      if (!wa) {
+        alert('Please enter a WhatsApp Number (digits only, e.g. 12345678900).');
+        if (waInput) waInput.focus();
+        return false;
+      }
+      if (!phone) {
+        alert('Please enter a Phone Number (e.g. +1 234 567 8900).');
+        if (phoneInput) phoneInput.focus();
+        return false;
+      }
+
+      adminConfig.whatsapp = wa.replace(/[^0-9]/g, '');
+      adminConfig.phone = phone;
+      if (pwd) adminConfig.adminPassword = pwd;
+
+      saveCfgToStorage();
+      showAlert('✅ Settings & Contact Info Saved Successfully!');
+      return false;
+    }
+
+    function exportJson() {
+      var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(adminProducts, null, 2));
+      var dl = document.createElement('a');
+      dl.setAttribute('href', dataStr);
+      dl.setAttribute('download', 'mpc_warehouse_catalog.json');
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+    }
+
+    function importJson(inputEl) {
+      var file = inputEl.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          var imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported) && imported.length > 0) {
+            adminProducts = imported;
+            saveProdsToStorage();
+            renderTable();
+            showAlert('Imported ' + imported.length + ' products successfully!');
+          } else {
+            alert('Invalid JSON file format.');
+          }
+        } catch(err) {
+          alert('JSON parse error: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetSample() {
+      if (confirm('Reset to default sample warehouse products?')) {
+        adminProducts = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        saveProdsToStorage();
+        renderTable();
+        showAlert('Sample products restored.');
+      }
+    }
+
+    function logout() {
+      try {
+        localStorage.removeItem('mpc_admin_auth');
+        sessionStorage.removeItem('mpc_admin_auth');
+      } catch(e) {}
+      window.location.href = 'index.html';
+    }
+
+    function showAlert(msg) {
+      var banner = document.getElementById('action-alert-banner');
+      var text = document.getElementById('action-alert-text');
+      if (banner && text) {
+        text.textContent = msg;
+        banner.style.display = 'flex';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(function() {
+          banner.style.display = 'none';
+        }, 3500);
+      } else {
+        alert(msg);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      if (!str) return '';
+      return String(str).replace(/"/g, '&quot;');
+    }
+
+    function bootAdmin() {
+      loadAdminData();
+      renderTable();
+      loadSettingsForm();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootAdmin);
+    } else {
+      bootAdmin();
+    }
+  </script>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col antialiased">
 
@@ -44,6 +465,7 @@
           <span class="hidden sm:inline">View Catalog</span>
         </a>
         <button 
+          type="button"
           onclick="logout()"
           class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 transition-colors flex items-center gap-1.5 text-white shadow-xs"
         >
@@ -58,10 +480,15 @@
   <!-- ADMIN WORKSPACE -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
     
-    <!-- Toast Feedback Notification -->
-    <div id="admin-toast" class="hidden fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-black text-white text-xs font-bold shadow-2xl flex items-center gap-2 transition-all">
-      <i class="fa-solid fa-circle-check text-emerald-400"></i>
-      <span id="admin-toast-msg">Action successful</span>
+    <!-- Top Action Alert Banner (Visible confirmation) -->
+    <div id="action-alert-banner" style="display: none;" class="p-4 rounded-2xl bg-emerald-600 text-white font-bold text-xs sm:text-sm items-center justify-between shadow-lg">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <span id="action-alert-text">Action completed successfully</span>
+      </div>
+      <button type="button" onclick="document.getElementById('action-alert-banner').style.display='none'" class="text-white hover:opacity-80">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
     <!-- Navigation Tabs -->
@@ -70,10 +497,10 @@
         type="button"
         id="tab-btn-table"
         onclick="switchTab('table')"
-        class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5"
+        class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5 shadow-sm"
       >
         <i class="fa-solid fa-boxes-stacked"></i>
-        <span>Inventory & Stock</span>
+        <span>1. Inventory & Stock</span>
       </button>
       <button 
         type="button"
@@ -82,7 +509,7 @@
         class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5"
       >
         <i class="fa-solid fa-plus text-orange-600"></i>
-        <span>Add New Product</span>
+        <span>2. Add New Product</span>
       </button>
       <button 
         type="button"
@@ -91,12 +518,12 @@
         class="px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5"
       >
         <i class="fa-solid fa-sliders"></i>
-        <span>Settings & Phone</span>
+        <span>3. Settings & Phone</span>
       </button>
     </div>
 
     <!-- SECTION 1: INVENTORY TABLE -->
-    <section id="sec-inventory-table" class="space-y-4">
+    <section id="sec-inventory-table" class="space-y-4" style="display: block;">
       
       <!-- Top Action Bar -->
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
@@ -105,7 +532,7 @@
             <h2 class="text-base font-black text-slate-900">Current Warehouse Products</h2>
             <span id="admin-total-items" class="text-xs font-bold bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700">0 products</span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">Edit quantities directly in the table. Click Edit to change details.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Edit quantities directly in the table. Click "+ Add Product" to create an item.</p>
         </div>
         
         <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
@@ -151,7 +578,7 @@
               </tr>
             </thead>
             <tbody id="admin-inventory-tbody" class="divide-y divide-slate-100">
-              <!-- Dynamically rendered -->
+              <!-- Rendered by renderTable() -->
             </tbody>
           </table>
         </div>
@@ -159,15 +586,15 @@
     </section>
 
     <!-- SECTION 2: ADD / EDIT PRODUCT FORM -->
-    <section id="sec-product-form" class="hidden">
+    <section id="sec-product-form" class="space-y-4" style="display: none;">
       <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6">
         
         <div class="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
             <h2 id="product-form-title" class="text-lg font-black text-slate-900">Add New Product</h2>
-            <p class="text-xs text-slate-400 mt-0.5">Enter product details and stock quantity</p>
+            <p class="text-xs text-slate-400 mt-0.5">Fill in reference, designation, category, and quantity</p>
           </div>
-          <button type="button" onclick="cancelProductForm()" class="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 bg-slate-100 rounded-lg">
+          <button type="button" onclick="cancelProductForm()" class="px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl">
             ← Back to Table
           </button>
         </div>
@@ -176,18 +603,18 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label for="prod-ref" class="block text-xs font-bold text-slate-700 mb-1">Product Reference (REF) *</label>
-              <input type="text" id="prod-ref" required placeholder="e.g. REF-TOOL-99" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-black">
+              <input type="text" id="prod-ref" placeholder="e.g. REF-TOOL-99" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-black">
             </div>
             <div>
               <label for="prod-category" class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
-              <input type="text" id="prod-category" required placeholder="e.g. Tools & Equipment, Plumbing, Electrical..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-black">
+              <input type="text" id="prod-category" placeholder="e.g. Tools & Equipment, Plumbing, Electrical..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-black">
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="sm:col-span-2">
               <label for="prod-designation" class="block text-xs font-bold text-slate-700 mb-1">Designation (Product Name) *</label>
-              <input type="text" id="prod-designation" required placeholder="e.g. Industrial Heavy Duty Hammer Drill" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-black">
+              <input type="text" id="prod-designation" placeholder="e.g. Industrial Heavy Duty Hammer Drill" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:ring-2 focus:ring-black">
             </div>
             <div>
               <label for="prod-type" class="block text-xs font-bold text-slate-700 mb-1">Sub-Type</label>
@@ -198,7 +625,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label for="prod-qte" class="block text-xs font-bold text-slate-700 mb-1">Available Quantity (Qte) *</label>
-              <input type="number" id="prod-qte" min="0" required placeholder="100" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
+              <input type="number" id="prod-qte" min="0" placeholder="100" value="100" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
             </div>
             <div>
               <label for="prod-unit" class="block text-xs font-bold text-slate-700 mb-1">Unit of Measure</label>
@@ -207,14 +634,14 @@
           </div>
 
           <div>
-            <label for="prod-images" class="block text-xs font-bold text-slate-700 mb-1">Image URLs (One URL per line for multiple photo slider)</label>
+            <label for="prod-images" class="block text-xs font-bold text-slate-700 mb-1">Image URLs (One link per line for multiple photo slideshow)</label>
             <textarea id="prod-images" rows="3" placeholder="https://images.unsplash.com/...&#10;https://images.unsplash.com/..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-black"></textarea>
-            <span class="text-[11px] text-slate-400">Paste one or more image links to show multiple photos for this item.</span>
+            <span class="text-[11px] text-slate-400">Optional: Paste image links to enable photo slides. Leave empty for default photo.</span>
           </div>
 
           <div>
             <label for="prod-description" class="block text-xs font-bold text-slate-700 mb-1">Details & Specifications</label>
-            <textarea id="prod-description" rows="3" placeholder="Detailed product specifications, dimensions, packaging, voltage..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-black"></textarea>
+            <textarea id="prod-description" rows="3" placeholder="Specifications, dimensions, packaging..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-black"></textarea>
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-3">
@@ -230,7 +657,7 @@
     </section>
 
     <!-- SECTION 3: SETTINGS -->
-    <section id="sec-settings" class="hidden">
+    <section id="sec-settings" class="space-y-4" style="display: none;">
       <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm max-w-xl mx-auto space-y-6">
         
         <div>
@@ -240,19 +667,19 @@
 
         <form id="admin-settings-form" onsubmit="return saveSettings(event)" class="space-y-4">
           <div>
-            <label for="cfg-whatsapp" class="block text-xs font-bold text-slate-700 mb-1">WhatsApp Number (Digits only, including country code)</label>
-            <input type="text" id="cfg-whatsapp" required placeholder="e.g. 12345678900" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
+            <label for="cfg-whatsapp" class="block text-xs font-bold text-slate-700 mb-1">WhatsApp Number (Digits only with country code)</label>
+            <input type="text" id="cfg-whatsapp" placeholder="e.g. 12345678900" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
             <p class="text-[11px] text-slate-400 mt-1">Do not include +, spaces, or dashes (e.g. 12345678900).</p>
           </div>
 
           <div>
             <label for="cfg-phone" class="block text-xs font-bold text-slate-700 mb-1">Phone Number (Display for direct calls)</label>
-            <input type="text" id="cfg-phone" required placeholder="e.g. +1 234 567 8900" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
+            <input type="text" id="cfg-phone" placeholder="e.g. +1 234 567 8900" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
           </div>
 
           <div>
             <label for="cfg-password" class="block text-xs font-bold text-slate-700 mb-1">Admin Panel Password</label>
-            <input type="text" id="cfg-password" required placeholder="Enter new admin password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
+            <input type="text" id="cfg-password" placeholder="Enter new admin password" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold focus:ring-2 focus:ring-black">
           </div>
 
           <div class="pt-3">
@@ -271,361 +698,5 @@
     <p>MPC/SRC WAREHOUSE • Administration</p>
   </footer>
 
-  <!-- External Defaults -->
-  <script src="js/data.js?v=4"></script>
-
-  <!-- SELF-CONTAINED INLINE ADMIN LOGIC (Zero reliance on CDN caching) -->
-  <script>
-    var currentEditingId = null;
-    var adminProducts = [];
-    var adminConfig = {};
-
-    function initAdmin() {
-      loadAdminData();
-      renderTable();
-      loadSettingsForm();
-    }
-
-    function loadAdminData() {
-      // Products
-      try {
-        var rawProds = localStorage.getItem('mpc_warehouse_products');
-        if (rawProds) {
-          adminProducts = JSON.parse(rawProds);
-        } else if (typeof INITIAL_PRODUCTS !== 'undefined') {
-          adminProducts = [...INITIAL_PRODUCTS];
-        } else {
-          adminProducts = [];
-        }
-      } catch(e) {
-        adminProducts = typeof INITIAL_PRODUCTS !== 'undefined' ? [...INITIAL_PRODUCTS] : [];
-      }
-
-      // Config
-      try {
-        var rawCfg = localStorage.getItem('mpc_warehouse_config');
-        if (rawCfg) {
-          adminConfig = JSON.parse(rawCfg);
-        } else if (typeof DEFAULT_CONFIG !== 'undefined') {
-          adminConfig = { ...DEFAULT_CONFIG };
-        } else {
-          adminConfig = { warehouseName: 'MPC/SRC WAREHOUSE', phone: '+1 234 567 8900', whatsapp: '12345678900', adminPassword: 'admin123' };
-        }
-      } catch(e) {
-        adminConfig = typeof DEFAULT_CONFIG !== 'undefined' ? { ...DEFAULT_CONFIG } : {};
-      }
-    }
-
-    function saveProdsToStorage() {
-      try {
-        localStorage.setItem('mpc_warehouse_products', JSON.stringify(adminProducts));
-      } catch(e) {
-        console.error('Error saving products:', e);
-      }
-    }
-
-    function saveCfgToStorage() {
-      try {
-        localStorage.setItem('mpc_warehouse_config', JSON.stringify(adminConfig));
-      } catch(e) {
-        console.error('Error saving config:', e);
-      }
-    }
-
-    function switchTab(tabName) {
-      var secTable = document.getElementById('sec-inventory-table');
-      var secForm = document.getElementById('sec-product-form');
-      var secSettings = document.getElementById('sec-settings');
-
-      var btnTable = document.getElementById('tab-btn-table');
-      var btnForm = document.getElementById('tab-btn-form');
-      var btnSettings = document.getElementById('tab-btn-settings');
-
-      // Hide all
-      if (secTable) secTable.classList.add('hidden');
-      if (secForm) secForm.classList.add('hidden');
-      if (secSettings) secSettings.classList.add('hidden');
-
-      // Reset button styles
-      [btnTable, btnForm, btnSettings].forEach(function(btn) {
-        if (btn) {
-          btn.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap flex items-center gap-1.5';
-        }
-      });
-
-      if (tabName === 'form') {
-        if (secForm) secForm.classList.remove('hidden');
-        if (btnForm) btnForm.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5';
-      } else if (tabName === 'settings') {
-        if (secSettings) secSettings.classList.remove('hidden');
-        if (btnSettings) btnSettings.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5';
-        loadSettingsForm();
-      } else {
-        if (secTable) secTable.classList.remove('hidden');
-        if (btnTable) btnTable.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-black text-white whitespace-nowrap flex items-center gap-1.5';
-        renderTable();
-      }
-    }
-
-    function renderTable() {
-      var tbody = document.getElementById('admin-inventory-tbody');
-      var countBadge = document.getElementById('admin-total-items');
-      if (!tbody) return;
-
-      if (countBadge) countBadge.textContent = adminProducts.length + ' products';
-
-      if (adminProducts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">No products in inventory. Click "+ Add Product" to create one.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = adminProducts.map(function(p) {
-        var img = (p.images && p.images[0]) ? p.images[0] : 'https://placehold.co/100x100?text=No+Photo';
-        var refSafe = escapeHtml(p.ref || '');
-        var desSafe = escapeHtml(p.designation || '');
-        var catSafe = escapeHtml(p.category || '');
-        var unitSafe = escapeHtml(p.unit || 'pcs');
-
-        return '<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">' +
-          '<td class="py-3 px-4 w-16">' +
-            '<img src="' + escapeAttr(img) + '" alt="img" class="w-12 h-12 rounded-lg object-cover bg-slate-100 border border-slate-200">' +
-          '</td>' +
-          '<td class="py-3 px-4 font-mono font-bold text-xs text-slate-900">' + refSafe + '</td>' +
-          '<td class="py-3 px-4 font-bold text-xs text-slate-900 max-w-xs truncate">' + desSafe + '</td>' +
-          '<td class="py-3 px-4 text-xs text-slate-600">' + catSafe + '</td>' +
-          '<td class="py-3 px-4 text-center">' +
-            '<input type="number" value="' + p.qte + '" min="0" class="w-20 text-center font-bold text-xs py-1.5 px-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black" onchange="quickUpdateQte(\'' + p.id + '\', this.value)">' +
-          '</td>' +
-          '<td class="py-3 px-4 text-right whitespace-nowrap">' +
-            '<button type="button" onclick="editProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded mr-1">Edit</button>' +
-            '<button type="button" onclick="deleteProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded">Delete</button>' +
-          '</td>' +
-        '</tr>';
-      }).join('');
-    }
-
-    function quickUpdateQte(productId, newVal) {
-      var qte = parseInt(newVal, 10);
-      if (isNaN(qte) || qte < 0) return;
-      var prod = adminProducts.find(function(p) { return p.id === productId; });
-      if (prod) {
-        prod.qte = qte;
-        saveProdsToStorage();
-        showFeedback('Stock Qte updated to ' + qte);
-      }
-    }
-
-    function editProduct(productId) {
-      var prod = adminProducts.find(function(p) { return p.id === productId; });
-      if (!prod) return;
-
-      currentEditingId = productId;
-      document.getElementById('prod-ref').value = prod.ref || '';
-      document.getElementById('prod-designation').value = prod.designation || '';
-      document.getElementById('prod-category').value = prod.category || '';
-      document.getElementById('prod-type').value = prod.type || '';
-      document.getElementById('prod-qte').value = prod.qte || 0;
-      document.getElementById('prod-unit').value = prod.unit || 'pcs';
-      document.getElementById('prod-images').value = (prod.images || []).join('\n');
-      document.getElementById('prod-description').value = prod.description || '';
-
-      var title = document.getElementById('product-form-title');
-      var submitBtn = document.getElementById('product-form-submit-btn');
-      if (title) title.textContent = 'Edit Product: ' + prod.ref;
-      if (submitBtn) submitBtn.textContent = 'Save Changes';
-
-      switchTab('form');
-    }
-
-    function cancelProductForm() {
-      currentEditingId = null;
-      var form = document.getElementById('admin-product-form');
-      if (form) form.reset();
-      var title = document.getElementById('product-form-title');
-      var submitBtn = document.getElementById('product-form-submit-btn');
-      if (title) title.textContent = 'Add New Product';
-      if (submitBtn) submitBtn.textContent = 'Save Product';
-      switchTab('table');
-    }
-
-    function saveProduct(e) {
-      if (e) e.preventDefault();
-
-      var ref = document.getElementById('prod-ref').value.trim();
-      var designation = document.getElementById('prod-designation').value.trim();
-      var category = document.getElementById('prod-category').value.trim();
-      var type = document.getElementById('prod-type').value.trim();
-      var qte = parseInt(document.getElementById('prod-qte').value, 10) || 0;
-      var unit = document.getElementById('prod-unit').value.trim() || 'pcs';
-      var imagesRaw = document.getElementById('prod-images').value.trim();
-      var description = document.getElementById('prod-description').value.trim();
-
-      if (!ref || !designation || !category) {
-        alert('Please fill in Reference, Designation, and Category!');
-        return false;
-      }
-
-      var images = imagesRaw
-        ? imagesRaw.split(/[\n,]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; })
-        : ['https://placehold.co/600x450?text=Warehouse+Stock'];
-
-      if (currentEditingId) {
-        var prod = adminProducts.find(function(p) { return p.id === currentEditingId; });
-        if (prod) {
-          prod.ref = ref;
-          prod.designation = designation;
-          prod.category = category;
-          prod.type = type;
-          prod.qte = qte;
-          prod.unit = unit;
-          prod.images = images;
-          prod.description = description;
-        }
-        showFeedback('Product updated successfully!');
-      } else {
-        var newProd = {
-          id: 'prod-' + Date.now(),
-          ref: ref,
-          designation: designation,
-          category: category,
-          type: type,
-          qte: qte,
-          unit: unit,
-          images: images,
-          description: description
-        };
-        adminProducts.unshift(newProd);
-        showFeedback('New product added to inventory!');
-      }
-
-      saveProdsToStorage();
-      cancelProductForm();
-      return false;
-    }
-
-    function deleteProduct(productId) {
-      var prod = adminProducts.find(function(p) { return p.id === productId; });
-      if (!prod) return;
-
-      if (confirm('Delete [' + prod.ref + '] - ' + prod.designation + '?')) {
-        adminProducts = adminProducts.filter(function(p) { return p.id !== productId; });
-        saveProdsToStorage();
-        renderTable();
-        showFeedback('Product deleted');
-      }
-    }
-
-    function loadSettingsForm() {
-      var waInput = document.getElementById('cfg-whatsapp');
-      var phoneInput = document.getElementById('cfg-phone');
-      var pwdInput = document.getElementById('cfg-password');
-
-      if (waInput) waInput.value = adminConfig.whatsapp || '12345678900';
-      if (phoneInput) phoneInput.value = adminConfig.phone || '+1 234 567 8900';
-      if (pwdInput) pwdInput.value = adminConfig.adminPassword || 'admin123';
-    }
-
-    function saveSettings(e) {
-      if (e) e.preventDefault();
-
-      var wa = document.getElementById('cfg-whatsapp').value.trim();
-      var phone = document.getElementById('cfg-phone').value.trim();
-      var pwd = document.getElementById('cfg-password').value.trim();
-
-      if (!wa || !phone) {
-        alert('Please fill in WhatsApp number and Phone number!');
-        return false;
-      }
-
-      adminConfig.whatsapp = wa.replace(/[^0-9]/g, '');
-      adminConfig.phone = phone;
-      if (pwd) adminConfig.adminPassword = pwd;
-
-      saveCfgToStorage();
-      showFeedback('Settings & Contact info saved successfully!');
-      return false;
-    }
-
-    function exportJson() {
-      var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(adminProducts, null, 2));
-      var dl = document.createElement('a');
-      dl.setAttribute('href', dataStr);
-      dl.setAttribute('download', 'mpc_warehouse_catalog.json');
-      document.body.appendChild(dl);
-      dl.click();
-      dl.remove();
-    }
-
-    function importJson(inputEl) {
-      var file = inputEl.files[0];
-      if (!file) return;
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          var imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported) && imported.length > 0) {
-            adminProducts = imported;
-            saveProdsToStorage();
-            renderTable();
-            showFeedback('Imported ' + imported.length + ' products successfully!');
-          } else {
-            alert('Invalid JSON file. Expected an array of products.');
-          }
-        } catch(err) {
-          alert('Error parsing JSON file: ' + err.message);
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function resetSample() {
-      if (confirm('Restore sample warehouse catalog? This will overwrite local products.')) {
-        if (typeof INITIAL_PRODUCTS !== 'undefined') {
-          adminProducts = [...INITIAL_PRODUCTS];
-        } else {
-          adminProducts = [];
-        }
-        saveProdsToStorage();
-        renderTable();
-        showFeedback('Sample products restored!');
-      }
-    }
-
-    function logout() {
-      try {
-        localStorage.removeItem('mpc_admin_auth');
-        sessionStorage.removeItem('mpc_admin_auth');
-      } catch(e) {}
-      window.location.href = 'index.html';
-    }
-
-    function showFeedback(msg) {
-      var toast = document.getElementById('admin-toast');
-      var toastMsg = document.getElementById('admin-toast-msg');
-      if (toast && toastMsg) {
-        toastMsg.textContent = msg;
-        toast.classList.remove('hidden');
-        setTimeout(function() {
-          toast.classList.add('hidden');
-        }, 2500);
-      } else {
-        alert(msg);
-      }
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-    }
-
-    function escapeAttr(str) {
-      if (!str) return '';
-      return String(str).replace(/"/g, '&quot;');
-    }
-
-    // Run on load
-    document.addEventListener('DOMContentLoaded', initAdmin);
-  </script>
 </body>
 </html>
