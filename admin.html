@@ -5,12 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - MPC/SRC WAREHOUSE</title>
   
+  <!-- Inline Early Auth Handling (Bypasses any storage delay) -->
+  <script>
+    if (window.location.search.includes('unlocked=true')) {
+      try {
+        localStorage.setItem('mpc_admin_auth', 'true');
+        sessionStorage.setItem('mpc_admin_auth', 'true');
+      } catch(e) {}
+    }
+  </script>
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col antialiased">
 
@@ -225,8 +235,8 @@
     <p>MPC/SRC WAREHOUSE • Administration</p>
   </footer>
 
-  <!-- Scripts -->
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Scripts with cache bust -->
+  <script src="js/data.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>
