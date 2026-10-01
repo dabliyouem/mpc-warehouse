@@ -1,9 +1,9 @@
-﻿// Default Warehouse Configuration and Initial Inventory Data
+// Default Warehouse Configuration and Initial Inventory Data
 const DEFAULT_CONFIG = {
   warehouseName: "MPC/SRC WAREHOUSE",
   phone: "+1 234 567 8900",
   whatsapp: "12345678900", // International format digits only for wa.me
-  adminPassword: "DABLIYOU12" // Default password for admin panel
+  adminPasswordHash: "ede1f09bfaeafe837c0db5061558d741a632b8fff60100e3feb6fdf778fbcc12" // SHA-256 hash of admin password
 };
 
 const INITIAL_PRODUCTS = [

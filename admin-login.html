@@ -19,6 +19,16 @@
 
   <!-- INLINE LOGIN LOGIC (100% Standalone - No js folder needed) -->
   <script>
+    // Native SHA-256 Cryptographic Hash
+    async function sha256(str) {
+      var buffer = new TextEncoder().encode(str);
+      var hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+      var hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(function(b) {
+        return b.toString(16).padStart(2, '0');
+      }).join('');
+    }
+
     function togglePasswordVisibility() {
       var pwd = document.getElementById('admin-password-input');
       var btn = document.getElementById('toggle-pwd-btn');
@@ -31,23 +41,39 @@
       }
     }
 
-    function directSubmitLogin(e) {
+    // Default admin password SHA-256 hash (never exposes plain-text password)
+    var DEFAULT_PASSWORD_HASH = 'ede1f09bfaeafe837c0db5061558d741a632b8fff60100e3feb6fdf778fbcc12';
+
+    async function directSubmitLogin(e) {
       if (e && e.preventDefault) e.preventDefault();
       var input = document.getElementById('admin-password-input');
       var val = (input ? input.value : '').trim();
 
-      var stored = 'DABLIYOU12';
+      var storedHash = DEFAULT_PASSWORD_HASH;
       try {
         var raw = localStorage.getItem('mpc_warehouse_config');
         if (raw) {
           var cfg = JSON.parse(raw);
-          if (cfg.adminPassword && cfg.adminPassword.trim() && cfg.adminPassword.trim() !== 'admin123') {
-            stored = cfg.adminPassword.trim();
+          // If legacy plain-text password exists in localStorage, migrate it to hash and purge plain text
+          if (cfg.adminPassword) {
+            if (cfg.adminPassword !== 'admin123') {
+              cfg.adminPasswordHash = await sha256(cfg.adminPassword.trim().toUpperCase());
+            } else {
+              cfg.adminPasswordHash = DEFAULT_PASSWORD_HASH;
+            }
+            delete cfg.adminPassword;
+            localStorage.setItem('mpc_warehouse_config', JSON.stringify(cfg));
+          }
+          if (cfg.adminPasswordHash && cfg.adminPasswordHash.trim()) {
+            storedHash = cfg.adminPasswordHash.trim();
           }
         }
       } catch (err) {}
 
-      if (val === stored || val.toUpperCase() === stored.toUpperCase()) {
+      var inputUpperHash = await sha256(val.toUpperCase());
+      var inputExactHash = await sha256(val);
+
+      if (inputUpperHash === storedHash || inputExactHash === storedHash) {
         try {
           localStorage.setItem('mpc_admin_auth', 'true');
           sessionStorage.setItem('mpc_admin_auth', 'true');
@@ -112,7 +138,7 @@
       </div>
 
       <!-- Form -->
-      <form id="admin-login-form" onsubmit="return directSubmitLogin(event)" class="space-y-4">
+      <form id="admin-login-form" onsubmit="directSubmitLogin(event); return false;" class="space-y-4">
         <div>
           <label for="admin-password-input" class="block text-xs font-bold text-slate-700 mb-1">Admin Password</label>
           <div class="relative">

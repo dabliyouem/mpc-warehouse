@@ -25,8 +25,7 @@ This project requires **no server setup, no Node.js, and no database**. It runs 
 The management interface is on a **dedicated page (not a modal)**:
 
 1. Click **Admin Login** in the top right of the header (or go to `admin-login.html`).
-2. Enter the password:
-   - **Default Password**: `admin123`
+2. Enter your secure admin password (cryptographically verified via SHA-256 hash).
 3. Once logged in, you enter `admin.html`:
    - **Quick Stock Qte Editor**: Type new stock quantities directly in the table to update instantly.
    - **Add New Product**: Add items with multiple photo URLs (for image sliders), Ref, Designation, and Qte.

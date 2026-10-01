@@ -14,14 +14,25 @@
     editingProductId: null,
   };
 
+  const DEFAULT_PASSWORD_HASH = 'ede1f09bfaeafe837c0db5061558d741a632b8fff60100e3feb6fdf778fbcc12';
+
+  async function sha256(str) {
+    const buffer = new TextEncoder().encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   // Load from localStorage or defaults
   function loadData() {
     try {
       const savedConfig = localStorage.getItem('mpc_warehouse_config');
       state.config = savedConfig ? JSON.parse(savedConfig) : { ...DEFAULT_CONFIG };
-      // Ensure adminPassword is always set
-      if (!state.config.adminPassword || state.config.adminPassword.trim() === '') {
-        state.config.adminPassword = 'admin123';
+      if (state.config.adminPassword) {
+        delete state.config.adminPassword;
+      }
+      if (!state.config.adminPasswordHash || state.config.adminPasswordHash === 'admin123') {
+        state.config.adminPasswordHash = DEFAULT_PASSWORD_HASH;
       }
     } catch (e) {
       state.config = { ...DEFAULT_CONFIG };
@@ -66,18 +77,13 @@
     );
   }
 
-  function loginAdmin(password) {
+  async function loginAdmin(password) {
     const entered = (password || '').trim();
-    const stored = (state.config.adminPassword || 'admin123').trim();
+    const storedHash = (state.config.adminPasswordHash || DEFAULT_PASSWORD_HASH).trim();
+    const upperHash = await sha256(entered.toUpperCase());
+    const exactHash = await sha256(entered);
 
-    // Flexible matching: exact match, case-insensitive, or default fallback 'admin123' / 'admin'
-    if (
-      entered === stored ||
-      entered.toLowerCase() === stored.toLowerCase() ||
-      entered === 'admin123' ||
-      entered.toLowerCase() === 'admin123' ||
-      entered.toLowerCase() === 'admin'
-    ) {
+    if (upperHash === storedHash || exactHash === storedHash) {
       sessionStorage.setItem('mpc_admin_auth', 'true');
       localStorage.setItem('mpc_admin_auth', 'true');
       return true;
@@ -595,40 +601,19 @@
       });
     }
 
-    // Auto-fill default password button
-    if (fillBtn && pwdInput) {
-      fillBtn.addEventListener('click', () => {
-        pwdInput.value = 'admin123';
-        if (errorMsg) errorMsg.classList.add('hidden');
-      });
-    }
-
-    // Emergency Reset button
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        state.config.adminPassword = 'admin123';
-        saveConfig();
-        if (pwdInput) pwdInput.value = 'admin123';
-        if (errorMsg) {
-          errorMsg.classList.remove('hidden');
-          errorMsg.className = 'mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold flex items-center gap-2';
-          errorMsg.innerHTML = '<i class="fa-solid fa-check"></i><span>Password reset to: <strong>admin123</strong></span>';
-        }
-      });
-    }
 
     if (form && pwdInput) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const pwd = pwdInput.value;
 
-        if (loginAdmin(pwd)) {
+        if (await loginAdmin(pwd)) {
           window.location.href = 'admin.html';
         } else {
           if (errorMsg) {
             errorMsg.classList.remove('hidden');
             errorMsg.className = 'mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold flex items-center gap-2';
-            errorMsg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Incorrect password. Default is <strong>admin123</strong></span>';
+            errorMsg.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i><span>Incorrect password. Please try again.</span>';
           }
         }
       });
@@ -827,14 +812,22 @@
 
     if (phoneInput) phoneInput.value = state.config.phone || '';
     if (waInput) waInput.value = state.config.whatsapp || '';
-    if (pwdInput) pwdInput.value = state.config.adminPassword || 'admin123';
+    if (pwdInput) {
+      pwdInput.value = '';
+      pwdInput.placeholder = 'Leave blank to keep current, or enter new password';
+    }
   }
 
-  function handleAdminSettingsFormSubmit(e) {
+  async function handleAdminSettingsFormSubmit(e) {
     e.preventDefault();
     state.config.phone = document.getElementById('cfg-phone').value.trim();
     state.config.whatsapp = document.getElementById('cfg-whatsapp').value.trim();
-    state.config.adminPassword = document.getElementById('cfg-password').value.trim();
+    const newPwd = document.getElementById('cfg-password').value.trim();
+    if (newPwd) {
+      state.config.adminPasswordHash = await sha256(newPwd.toUpperCase());
+      if (state.config.adminPassword) delete state.config.adminPassword;
+      document.getElementById('cfg-password').value = '';
+    }
 
     saveConfig();
     showToast('Settings updated successfully!');
