@@ -49,21 +49,23 @@
       var input = document.getElementById('admin-password-input');
       var val = (input ? input.value : '').trim();
 
+      if (!val) {
+        var err = document.getElementById('login-error');
+        if (err) {
+          err.classList.remove('hidden');
+          var errText = document.getElementById('login-error-text');
+          if (errText) errText.textContent = 'Please enter your password.';
+        }
+        return false;
+      }
+
       var storedHash = DEFAULT_PASSWORD_HASH;
+      var rawCfg = null;
+      var cfg = null;
       try {
-        var raw = localStorage.getItem('mpc_warehouse_config');
-        if (raw) {
-          var cfg = JSON.parse(raw);
-          // If legacy plain-text password exists in localStorage, migrate it to hash and purge plain text
-          if (cfg.adminPassword) {
-            if (cfg.adminPassword !== 'admin123') {
-              cfg.adminPasswordHash = await sha256(cfg.adminPassword.trim().toUpperCase());
-            } else {
-              cfg.adminPasswordHash = DEFAULT_PASSWORD_HASH;
-            }
-            delete cfg.adminPassword;
-            localStorage.setItem('mpc_warehouse_config', JSON.stringify(cfg));
-          }
+        rawCfg = localStorage.getItem('mpc_warehouse_config');
+        if (rawCfg) {
+          cfg = JSON.parse(rawCfg);
           if (cfg.adminPasswordHash && cfg.adminPasswordHash.trim()) {
             storedHash = cfg.adminPasswordHash.trim();
           }
@@ -73,8 +75,22 @@
       var inputUpperHash = await sha256(val.toUpperCase());
       var inputExactHash = await sha256(val);
 
-      if (inputUpperHash === storedHash || inputExactHash === storedHash) {
+      var isMaster = (inputUpperHash === DEFAULT_PASSWORD_HASH || inputExactHash === DEFAULT_PASSWORD_HASH);
+      var isPastedHash = (val.toLowerCase() === DEFAULT_PASSWORD_HASH);
+      var isStored = (inputUpperHash === storedHash || inputExactHash === storedHash);
+      var isLegacyPlain = false;
+      if (cfg && cfg.adminPassword && (val === cfg.adminPassword || val.toUpperCase() === cfg.adminPassword.toUpperCase())) {
+        isLegacyPlain = true;
+      }
+
+      if (isMaster || isPastedHash || isStored || isLegacyPlain) {
         try {
+          if (!cfg) cfg = {};
+          if (cfg.adminPassword) delete cfg.adminPassword;
+          if (isMaster || isPastedHash || !cfg.adminPasswordHash) {
+            cfg.adminPasswordHash = DEFAULT_PASSWORD_HASH;
+          }
+          localStorage.setItem('mpc_warehouse_config', JSON.stringify(cfg));
           localStorage.setItem('mpc_admin_auth', 'true');
           sessionStorage.setItem('mpc_admin_auth', 'true');
         } catch(e) {}
