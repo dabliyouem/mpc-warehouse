@@ -130,9 +130,22 @@
     var currentSlideIdx = 0;
     var cfg = { phone: "+1 234 567 8900", whatsapp: "12345678900" };
 
+    function decodeProduct(str) {
+      try {
+        return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(str)))));
+      } catch(e) {
+        try {
+          return JSON.parse(decodeURIComponent(str));
+        } catch(e2) {
+          return null;
+        }
+      }
+    }
+
     function initProduct() {
       var params = new URLSearchParams(window.location.search);
       var pid = params.get('id');
+      var pData = params.get('p');
 
       var products = [];
       try {
@@ -146,20 +159,45 @@
             products = parsed;
           }
         } else {
-          products = DEFAULT_PRODUCTS;
+          products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
         }
       } catch(e) {
-        products = DEFAULT_PRODUCTS;
+        products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
       }
 
-      try {
-        var rawCfg = localStorage.getItem('mpc_warehouse_config');
-        if (rawCfg) cfg = JSON.parse(rawCfg);
-      } catch(e) {}
+      // 1. Universal Share Link: if product data is encoded in URL, load it immediately!
+      if (pData) {
+        var shared = decodeProduct(pData);
+        if (shared && shared.ref) {
+          if (!shared.id) shared.id = pid || ('prod-' + Date.now());
+          currentProd = shared;
 
-      for (var i = 0; i < products.length; i++) {
-        if (products[i].id === pid) { currentProd = products[i]; break; }
+          // Merge into recipient's localStorage so it also appears in their catalog!
+          try {
+            var exists = false;
+            for (var k = 0; k < products.length; k++) {
+              if (products[k].id === currentProd.id || (products[k].ref && products[k].ref.toUpperCase() === currentProd.ref.toUpperCase())) {
+                products[k] = currentProd;
+                exists = true;
+                break;
+              }
+            }
+            if (!exists) {
+              products.unshift(currentProd);
+            }
+            localStorage.setItem('mpc_warehouse_products', JSON.stringify(products));
+          } catch(err) {}
+        }
       }
+
+      // 2. Otherwise look up by ID
+      if (!currentProd && pid) {
+        for (var i = 0; i < products.length; i++) {
+          if (products[i].id === pid) { currentProd = products[i]; break; }
+        }
+      }
+
+      // 3. Fallback to first available item
       if (!currentProd && products.length > 0) currentProd = products[0];
 
       var container = document.getElementById('product-detail-view');
@@ -231,6 +269,10 @@
               '<i class="fa-solid fa-phone text-xs"></i>' +
               '<span>Call Us: ' + escapeHtml(cfg.phone || '+1 234 567 8900') + '</span>' +
             '</a>' +
+            '<button type="button" id="share-link-btn" onclick="copyProductShareLink()" class="w-full py-3 px-6 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-300">' +
+              '<i class="fa-solid fa-share-nodes text-emerald-600"></i>' +
+              '<span id="share-btn-text">Share Product (Universal Link)</span>' +
+            '</button>' +
             '<div class="text-[11px] text-slate-400 bg-slate-100 p-2.5 rounded-lg">' +
               '<span class="font-bold text-slate-600">WhatsApp Message Sent:</span>' +
               '<pre class="mt-1 font-mono text-[10px] text-slate-700">' + escapeHtml(waMsg) + '</pre>' +
@@ -238,6 +280,31 @@
           '</div>' +
         '</div>' +
       '</div>';
+    }
+
+    function copyProductShareLink() {
+      if (!currentProd) return;
+      var origin = window.location.origin;
+      var path = window.location.pathname;
+      var url = origin + path + '?id=' + encodeURIComponent(currentProd.id);
+      try {
+        var pData = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(currentProd)))));
+        url += '&p=' + pData;
+      } catch(e) {}
+
+      var btnText = document.getElementById('share-btn-text');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+          if (btnText) {
+            btnText.textContent = '✅ Link Copied! Send via WhatsApp / Chat';
+            setTimeout(function() { btnText.textContent = 'Share Product (Universal Link)'; }, 3000);
+          }
+        }).catch(function() {
+          prompt('Copy this Universal Share Link:', url);
+        });
+      } else {
+        prompt('Copy this Universal Share Link:', url);
+      }
     }
 
     function changeSlide(delta) {

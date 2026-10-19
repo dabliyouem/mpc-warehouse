@@ -270,12 +270,42 @@
             '<input type="number" value="' + qteVal + '" min="0" class="w-20 text-center font-bold text-xs py-1.5 px-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black" onchange="quickUpdateQte(\'' + p.id + '\', this.value)">' +
           '</td>' +
           '<td class="py-3 px-4 text-right whitespace-nowrap">' +
+            '<button type="button" onclick="shareProductLink(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded mr-1.5 border border-emerald-300" title="Copy Universal Share Link (Works on any phone)"><i class="fa-solid fa-share-nodes mr-1"></i>Share</button>' +
             '<button type="button" onclick="editProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded mr-1.5 border border-blue-200">Edit</button>' +
             '<button type="button" onclick="deleteProduct(\'' + p.id + '\')" class="px-2.5 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded border border-rose-200">Delete</button>' +
           '</td>' +
         '</tr>';
       }
       tbody.innerHTML = rowsHtml;
+    }
+
+    function shareProductLink(productId) {
+      var prod = null;
+      for (var i = 0; i < adminProducts.length; i++) {
+        if (adminProducts[i].id === productId) {
+          prod = adminProducts[i];
+          break;
+        }
+      }
+      if (!prod) return;
+
+      var origin = window.location.origin;
+      var path = window.location.pathname.replace(/admin\.html.*$/, 'product.html');
+      var url = origin + path + '?id=' + encodeURIComponent(prod.id);
+      try {
+        var pData = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(prod)))));
+        url += '&p=' + pData;
+      } catch(e) {}
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+          showAlert('✅ Universal link copied for [' + (prod.ref || 'Product') + ']! Anyone you send this to can view and order it on WhatsApp.');
+        }).catch(function() {
+          prompt('Copy this Universal Share Link:', url);
+        });
+      } else {
+        prompt('Copy this Universal Share Link:', url);
+      }
     }
 
     function quickUpdateQte(productId, newVal) {
